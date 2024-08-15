@@ -10,7 +10,7 @@ import {
   CatalogImportPage,
   catalogImportPlugin,
 } from '@backstage/plugin-catalog-import';
-import { ScaffolderPage, scaffolderPlugin } from '@backstage/plugin-scaffolder';
+import { ScaffolderFieldExtensions, ScaffolderPage, scaffolderPlugin } from '@backstage/plugin-scaffolder';
 import { orgPlugin } from '@backstage/plugin-org';
 import { SearchPage } from '@backstage/plugin-search';
 import {
@@ -36,6 +36,8 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
+import { extendedEntityPickerPlugin } from '@internal/backstage-plugin-extended-entity-picker';
+import { EntityPickerExtension } from '@internal/backstage-plugin-extended-entity-picker/src/plugin';
 
 const app = createApp({
   apis,
@@ -59,6 +61,9 @@ const app = createApp({
   components: {
     SignInPage: props => <SignInPage {...props} auto providers={['guest']} />,
   },
+  plugins: [
+    extendedEntityPickerPlugin
+  ]
 });
 
 const routes = (
@@ -80,7 +85,11 @@ const routes = (
         <ReportIssue />
       </TechDocsAddons>
     </Route>
-    <Route path="/create" element={<ScaffolderPage />} />
+    <Route path="/create" element={<ScaffolderPage />}>
+      <ScaffolderFieldExtensions>
+        <EntityPickerExtension />
+      </ScaffolderFieldExtensions>
+    </Route>
     <Route path="/api-docs" element={<ApiExplorerPage />} />
     <Route
       path="/catalog-import"
