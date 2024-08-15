@@ -25,7 +25,6 @@ import {
 } from '@backstage/catalog-model';
 import { useApi } from '@backstage/core-plugin-api';
 import {
-  EntityDisplayName,
   EntityRefPresentationSnapshot,
   catalogApiRef,
   entityPresentationApiRef,
@@ -45,6 +44,7 @@ import {
   EntityPickerFilterQuery,
 } from './schema';
 import { VirtualizedListbox } from '../';
+import { EntityDisplayName } from '../EntityDisplayName'
 
 export { EntityPickerSchema } from './schema';
 
@@ -69,12 +69,12 @@ export const EntityPicker = (props: EntityPickerProps) => {
   const defaultNamespace =
     uiSchema['ui:options']?.defaultNamespace || undefined;
 
-  const optionsValuePath = uiSchema['ui:options']?.optionsValuePath ?? '';
+  const optionValuePath = uiSchema['ui:options']?.optionValuePath ?? '';
 
-  let optionsLabelVariant = uiSchema['ui:options']?.optionsLabelVariant;
+  let optionLabelVariant = uiSchema['ui:options']?.optionLabelVariant;
   
-  optionsLabelVariant = optionsLabelVariant && ['entityRef', 'primaryTitle', 'secondaryTitle'].includes(optionsLabelVariant)
-    ? optionsLabelVariant
+  optionLabelVariant = optionLabelVariant && ['entityRef', 'primaryTitle', 'secondaryTitle'].includes(optionLabelVariant)
+    ? optionLabelVariant
     : 'entityRef';
 
   const catalogApi = useApi(catalogApiRef);
@@ -88,8 +88,8 @@ export const EntityPicker = (props: EntityPickerProps) => {
       'kind',
     ];
 
-    if (!fields.includes(optionsValuePath) && Boolean(optionsValuePath)) {
-      fields.push(optionsValuePath);
+    if (!fields.includes(optionValuePath) && Boolean(optionValuePath)) {
+      fields.push(optionValuePath);
     }
 
     const { items } = await catalogApi.getEntities(
@@ -165,7 +165,7 @@ export const EntityPicker = (props: EntityPickerProps) => {
           }
           // We need to check against formData here as that's the previous value for this field.
           if (formData !== ref || allowArbitraryValues) {
-            const valueToSelect = optionsValuePath ? ref : entityRef;
+            const valueToSelect = optionValuePath ? ref : entityRef;
             onChange(valueToSelect);
           }
         }
@@ -195,13 +195,13 @@ export const EntityPicker = (props: EntityPickerProps) => {
     );
 
     return presentation?.[
-      optionsLabelVariant as keyof EntityRefPresentationSnapshot
+      optionLabelVariant as keyof EntityRefPresentationSnapshot
     ] as string;
   }
 
   function getOptionValue(ref: Entity | CompoundEntityRef) {
-    return optionsValuePath
-      ? getValueFromEntityRef(ref as Entity, optionsValuePath)
+    return optionValuePath
+      ? getValueFromEntityRef(ref as Entity, optionValuePath)
       : stringifyEntityRef(ref as Entity);
   }
 
@@ -236,7 +236,7 @@ export const EntityPicker = (props: EntityPickerProps) => {
             InputProps={params.InputProps}
           />
         )}
-        renderOption={option => <EntityDisplayName entityRef={option} />}
+        renderOption={option => <EntityDisplayName entityRef={option} optionLabelVariant={optionLabelVariant}/>}
         filterOptions={createFilterOptions<Entity>({
           stringify: option => getOptionLabel(option),
         })}
