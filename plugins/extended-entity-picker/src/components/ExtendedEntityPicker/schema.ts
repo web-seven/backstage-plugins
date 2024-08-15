@@ -29,7 +29,7 @@ export const entityQueryFilterExpressionSchema = z.record(
 /**
  * @public
  */
-export const EntityPickerFieldSchema = makeFieldSchemaFromZod(
+export const ExtendedEntityPickerFieldSchema = makeFieldSchemaFromZod(
   z.string(),
   z.object({
     /**
@@ -73,20 +73,20 @@ export const EntityPickerFieldSchema = makeFieldSchemaFromZod(
 
 /**
  * The input props that can be specified under `ui:options` for the
- * `EntityPicker` field extension.
+ * `ExtendedEntityPicker` field extension.
  *
  * @public
  */
-export type EntityPickerUiOptions =
-  typeof EntityPickerFieldSchema.uiOptionsType;
+export type ExtendedEntityPickerUiOptions =
+  typeof ExtendedEntityPickerFieldSchema.uiOptionsType;
 
-export type EntityPickerProps = typeof EntityPickerFieldSchema.type;
+export type ExtendedEntityPickerProps = typeof ExtendedEntityPickerFieldSchema.type;
 
-export const EntityPickerSchema = EntityPickerFieldSchema.schema;
+export const ExtendedEntityPickerSchema = ExtendedEntityPickerFieldSchema.schema;
 
-export type EntityPickerFilterQuery = z.TypeOf<
+export type ExtendedEntityPickerFilterQuery = z.TypeOf<
   typeof entityQueryFilterExpressionSchema
 >;
 
-export type EntityPickerFilterQueryValue =
-  EntityPickerFilterQuery[keyof EntityPickerFilterQuery];
+export type ExtendedEntityPickerFilterQueryValue =
+ExtendedEntityPickerFilterQuery[keyof ExtendedEntityPickerFilterQuery];

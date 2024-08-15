@@ -38,23 +38,23 @@ import Autocomplete, {
 import React, { useCallback, useEffect } from 'react';
 import useAsync from 'react-use/esm/useAsync';
 import {
-  EntityPickerFilterQueryValue,
-  EntityPickerProps,
-  EntityPickerUiOptions,
-  EntityPickerFilterQuery,
+  ExtendedEntityPickerFilterQueryValue,
+  ExtendedEntityPickerProps,
+  ExtendedEntityPickerUiOptions,
+  ExtendedEntityPickerFilterQuery,
 } from './schema';
-import { VirtualizedListbox } from '../';
+import { VirtualizedListbox } from '..';
 import { EntityDisplayName } from '../EntityDisplayName'
 
-export { EntityPickerSchema } from './schema';
+export { ExtendedEntityPickerSchema } from './schema';
 
 /**
- * The underlying component that is rendered in the form for the `EntityPicker`
+ * The underlying component that is rendered in the form for the `ExtendedEntityPicker`
  * field extension.
  *
  * @public
  */
-export const EntityPicker = (props: EntityPickerProps) => {
+export const ExtendedEntityPicker = (props: ExtendedEntityPickerProps) => {
   const {
     onChange,
     schema: { title = 'Entity', description = 'An entity from the catalog' },
@@ -138,7 +138,7 @@ export const EntityPicker = (props: EntityPickerProps) => {
   );
 
   const onSelect = useCallback(
-    (_: any, ref: string | Entity | null, reason: AutocompleteChangeReason) => {
+    (_: any, ref: any | null, reason: AutocompleteChangeReason) => {
       // ref can either be a string from free solo entry or
 
       if (typeof ref !== 'string') {
@@ -236,7 +236,7 @@ export const EntityPicker = (props: EntityPickerProps) => {
             InputProps={params.InputProps}
           />
         )}
-        renderOption={option => <EntityDisplayName entityRef={option} optionLabelVariant={optionLabelVariant}/>}
+        renderOption={option => <EntityDisplayName entityRef={option} optionLabelVariant={optionLabelVariant} />}
         filterOptions={createFilterOptions<Entity>({
           stringify: option => getOptionLabel(option),
         })}
@@ -253,7 +253,7 @@ export const EntityPicker = (props: EntityPickerProps) => {
  * @returns The converted value.
  */
 function convertOpsValues(
-  value: Exclude<EntityPickerFilterQueryValue, Array<any>>,
+  value: Exclude<ExtendedEntityPickerFilterQueryValue, Array<any>>,
 ): string | symbol {
   if (typeof value === 'object' && value.exists) {
     return CATALOG_FILTER_EXISTS;
@@ -271,7 +271,7 @@ function convertOpsValues(
  * transformed to `CATALOG_FILTER_EXISTS` symbol.
  */
 function convertSchemaFiltersToQuery(
-  schemaFilters: EntityPickerFilterQuery,
+  schemaFilters: ExtendedEntityPickerFilterQuery,
 ): Exclude<EntityFilterQuery, Array<any>> {
   const query: EntityFilterQuery = {};
 
@@ -291,15 +291,15 @@ function convertSchemaFiltersToQuery(
  * If `catalogFilter` is specified in the `uiSchema`, it is converted to a `EntityFilterQuery`.
  * If `allowedKinds` is specified in the `uiSchema` will support the legacy `allowedKinds` option.
  *
- * @param uiSchema The `uiSchema` of an `EntityPicker` component.
+ * @param uiSchema The `uiSchema` of an `ExtendedEntityPicker` component.
  * @returns An `EntityFilterQuery` based on the `uiSchema`, or `undefined` if `catalogFilter` is not specified in the `uiSchema`.
  */
 function buildCatalogFilter(
-  uiSchema: EntityPickerProps['uiSchema'],
+  uiSchema: ExtendedEntityPickerProps['uiSchema'],
 ): EntityFilterQuery | undefined {
   const allowedKinds = uiSchema['ui:options']?.allowedKinds;
 
-  const catalogFilter: EntityPickerUiOptions['catalogFilter'] | undefined =
+  const catalogFilter: ExtendedEntityPickerUiOptions['catalogFilter'] | undefined =
     uiSchema['ui:options']?.catalogFilter ||
     (allowedKinds && { kind: allowedKinds });
 

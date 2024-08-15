@@ -24,8 +24,8 @@ import {
 import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 import { fireEvent, screen } from '@testing-library/react';
 import React from 'react';
-import { EntityPicker } from './EntityPicker';
-import { EntityPickerProps } from './schema';
+import { ExtendedEntityPicker } from './ExtendedEntityPicker';
+import { ExtendedEntityPickerProps } from './schema';
 import { ScaffolderRJSFFieldProps as FieldProps } from '@backstage/plugin-scaffolder-react';
 import { DefaultEntityPresentationApi } from '@backstage/plugin-catalog';
 
@@ -35,12 +35,12 @@ const makeEntity = (kind: string, namespace: string, name: string): Entity => ({
   metadata: { namespace, name },
 });
 
-describe('<EntityPicker />', () => {
+describe('<ExtendedEntityPicker />', () => {
   let entities: Entity[];
   const onChange = jest.fn();
   const schema = {};
   const required = false;
-  let uiSchema: EntityPickerProps['uiSchema'];
+  let uiSchema: ExtendedEntityPickerProps['uiSchema'];
   const rawErrors: string[] = [];
   const formData = undefined;
 
@@ -98,7 +98,7 @@ describe('<EntityPicker />', () => {
     it('searches for all entities', async () => {
       await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
         </Wrapper>,
       );
 
@@ -116,7 +116,7 @@ describe('<EntityPicker />', () => {
     it('updates even if there is not an exact match', async () => {
       const { getByRole } = await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
         </Wrapper>,
       );
 
@@ -147,7 +147,7 @@ describe('<EntityPicker />', () => {
     it('searches for users and groups', async () => {
       await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
         </Wrapper>,
       );
 
@@ -192,7 +192,7 @@ describe('<EntityPicker />', () => {
     it('searches for a specific group entity', async () => {
       await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
         </Wrapper>,
       );
 
@@ -225,7 +225,7 @@ describe('<EntityPicker />', () => {
 
       await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} uiSchema={uiSchema} />
+          <ExtendedEntityPicker {...props} uiSchema={uiSchema} />
         </Wrapper>,
       );
 
@@ -253,7 +253,7 @@ describe('<EntityPicker />', () => {
 
       await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} uiSchema={uiSchemaWithBoolean} />
+          <ExtendedEntityPicker {...props} uiSchema={uiSchemaWithBoolean} />
         </Wrapper>,
       );
 
@@ -298,7 +298,7 @@ describe('<EntityPicker />', () => {
     it('searches for a Group entity', async () => {
       await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
         </Wrapper>,
       );
 
@@ -337,7 +337,7 @@ describe('<EntityPicker />', () => {
     it('returns the full entityRef when entity exists in the list', async () => {
       const { getByRole } = await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
         </Wrapper>,
       );
 
@@ -352,7 +352,7 @@ describe('<EntityPicker />', () => {
     it('returns the full entityRef when entity does not exist in the list', async () => {
       const { getByRole } = await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
         </Wrapper>,
       );
 
@@ -365,7 +365,7 @@ describe('<EntityPicker />', () => {
     });
   });
 
-  describe('Required EntityPicker', () => {
+  describe('Required ExtendedEntityPicker', () => {
     beforeEach(() => {
       uiSchema = {
         'ui:options': {
@@ -396,7 +396,7 @@ describe('<EntityPicker />', () => {
     it('User enters clear input', async () => {
       await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
           <div data-testid="outside">Outside</div>
         </Wrapper>,
       );
@@ -412,7 +412,7 @@ describe('<EntityPicker />', () => {
     it('User selects item', async () => {
       await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
         </Wrapper>,
       );
 
@@ -428,7 +428,7 @@ describe('<EntityPicker />', () => {
     it('User selects item and enters clear input', async () => {
       await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
           <div data-testid="outside">Outside</div>
         </Wrapper>,
       );
@@ -462,7 +462,7 @@ describe('<EntityPicker />', () => {
     });
   });
 
-  describe('Optional EntityPicker', () => {
+  describe('Optional ExtendedEntityPicker', () => {
     beforeEach(() => {
       uiSchema = {
         'ui:options': {
@@ -493,7 +493,7 @@ describe('<EntityPicker />', () => {
     it('User enters clear input', async () => {
       await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
           <div data-testid="outside">Outside</div>
         </Wrapper>,
       );
@@ -509,7 +509,7 @@ describe('<EntityPicker />', () => {
     it('User selects item', async () => {
       await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
         </Wrapper>,
       );
 
@@ -525,7 +525,7 @@ describe('<EntityPicker />', () => {
     it('User selects item and enters clear input', async () => {
       await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
           <div data-testid="outside">Outside</div>
         </Wrapper>,
       );
@@ -591,7 +591,7 @@ describe('<EntityPicker />', () => {
     it('User enters clear input', async () => {
       await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
           <div data-testid="outside">Outside</div>
         </Wrapper>,
       );
@@ -607,7 +607,7 @@ describe('<EntityPicker />', () => {
     it('User selects item', async () => {
       await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
         </Wrapper>,
       );
 
@@ -623,7 +623,7 @@ describe('<EntityPicker />', () => {
     it('User selects item and enters clear input', async () => {
       await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
           <div data-testid="outside">Outside</div>
         </Wrapper>,
       );
@@ -689,7 +689,7 @@ describe('<EntityPicker />', () => {
     it('User enters clear input', async () => {
       await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
           <div data-testid="outside">Outside</div>
         </Wrapper>,
       );
@@ -705,7 +705,7 @@ describe('<EntityPicker />', () => {
     it('User selects item', async () => {
       await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
         </Wrapper>,
       );
 
@@ -721,7 +721,7 @@ describe('<EntityPicker />', () => {
     it('User selects item and enters clear input', async () => {
       await renderInTestApp(
         <Wrapper>
-          <EntityPicker {...props} />
+          <ExtendedEntityPicker {...props} />
           <div data-testid="outside">Outside</div>
         </Wrapper>,
       );
