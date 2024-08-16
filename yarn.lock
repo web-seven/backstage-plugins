@@ -9044,6 +9044,13 @@
   dependencies:
     "@types/react" "*"
 
+"@types/react-window@1.8.8":
+  version "1.8.8"
+  resolved "https://registry.yarnpkg.com/@types/react-window/-/react-window-1.8.8.tgz#c20645414d142364fbe735818e1c1e0a145696e3"
+  integrity sha512-8Ls660bHR1AUA2kuRvVG9D/4XpRC6wjAaPT9dil7Ckc76eP9TKWZwwmgfq8Q1LANX3QNDnoU4Zp48A3w+zK69Q==
+  dependencies:
+    "@types/react" "*"
+
 "@types/react@*", "@types/react@^16.13.1 || ^17.0.0", "@types/react@^16.13.1 || ^17.0.0 || ^18.0.0", "@types/react@^18":
   version "18.3.3"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-18.3.3.tgz#9679020895318b0915d7a3ab004d92d33375c45f"
@@ -9387,6 +9394,19 @@
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
+
+"@web-seven/backstage-plugin-extended-entity-picker@^0.1.0":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@web-seven/backstage-plugin-extended-entity-picker/-/backstage-plugin-extended-entity-picker-0.0.2.tgz#ecd2e050fefd22f5089deb3d50108b0925f7ee53"
+  integrity sha512-t6SkDvZEARtRCwEXKD35Be14hUstfK7MKsN8h8NbCN/z9eCr8S0kFrk0sVxoFmzS+fb18JNEFJyqL3hFenAMfg==
+  dependencies:
+    "@backstage/core-components" "^0.14.9"
+    "@backstage/core-plugin-api" "^1.9.3"
+    "@backstage/theme" "^0.5.6"
+    "@material-ui/core" "^4.9.13"
+    "@material-ui/icons" "^4.9.1"
+    "@material-ui/lab" "4.0.0-alpha.61"
+    react-use "^17.2.4"
 
 "@webassemblyjs/ast@1.12.1", "@webassemblyjs/ast@^1.12.1":
   version "1.12.1"
@@ -9869,9 +9889,9 @@ apg-lite@^1.0.3:
     "@backstage/plugin-techdocs-react" "^1.2.6"
     "@backstage/plugin-user-settings" "^0.8.9"
     "@backstage/theme" "^0.5.6"
-    "@internal/backstage-plugin-extended-entity-picker" "^0.1.0"
     "@material-ui/core" "^4.12.2"
     "@material-ui/icons" "^4.9.1"
+    "@web-seven/backstage-plugin-extended-entity-picker" "^0.1.0"
     history "^5.0.0"
     react "^18.0.2"
     react-dom "^18.0.2"
