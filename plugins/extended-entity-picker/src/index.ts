@@ -1,2 +1,1 @@
-export { extendedEntityPickerPlugin } from './plugin';
-export * from './components';
+export { extendedEntityPickerPlugin, EntityPickerExtension } from './plugin';

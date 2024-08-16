@@ -36,8 +36,7 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
-import { extendedEntityPickerPlugin } from '@internal/backstage-plugin-extended-entity-picker';
-import { EntityPickerExtension } from '@internal/backstage-plugin-extended-entity-picker/src/plugin';
+import { extendedEntityPickerPlugin, EntityPickerExtension } from '@web-seven/backstage-plugin-extended-entity-picker';
 
 const app = createApp({
   apis,

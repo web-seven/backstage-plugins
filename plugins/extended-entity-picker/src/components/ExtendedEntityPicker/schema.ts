@@ -64,9 +64,11 @@ export const ExtendedEntityPickerFieldSchema = makeFieldSchemaFromZod(
       .describe('List of key-value filter expression for entities'),
     optionValuePath: z
       .string()
+      .optional()
       .describe('Value of component used as value of picker'),
     optionLabelVariant: z
       .string()
+      .optional()
       .describe('Variant of displaying options labels (entityRef, primaryTitle, secondaryTitle)')
   }),
 );
