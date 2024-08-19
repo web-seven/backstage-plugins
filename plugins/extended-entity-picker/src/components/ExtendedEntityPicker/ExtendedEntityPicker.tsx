@@ -43,7 +43,7 @@ import {
   ExtendedEntityPickerUiOptions,
   ExtendedEntityPickerFilterQuery,
 } from './schema';
-import { VirtualizedListbox } from '..';
+import { VirtualizedListbox } from './VirtualizedListbox';
 import { EntityDisplayName } from '../EntityDisplayName'
 
 export { ExtendedEntityPickerSchema } from './schema';

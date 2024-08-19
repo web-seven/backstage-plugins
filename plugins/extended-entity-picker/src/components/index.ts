@@ -1,2 +1,2 @@
 export * from './ExtendedEntityPicker';
-export { VirtualizedListbox } from './VirtualizedListbox'
+export { VirtualizedListbox } from './ExtendedEntityPicker/VirtualizedListbox'
