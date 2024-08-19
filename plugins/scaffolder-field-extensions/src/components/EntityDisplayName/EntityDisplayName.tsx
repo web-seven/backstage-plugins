@@ -1,19 +1,3 @@
-/*
- * Copyright 2023 The Backstage Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import { CompoundEntityRef, Entity } from '@backstage/catalog-model';
 import Box from '@material-ui/core/Box';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -57,7 +41,7 @@ export type EntityDisplayNameProps = {
   disableTooltip?: boolean;
   defaultKind?: string;
   defaultNamespace?: string;
-  optionLabelVariant?: string;
+  labelVariant?: string;
 };
 
 /**
@@ -68,7 +52,7 @@ export type EntityDisplayNameProps = {
 export const EntityDisplayName = (
   props: EntityDisplayNameProps,
 ): JSX.Element => {
-  const { entityRef, hideIcon, disableTooltip, defaultKind, defaultNamespace, optionLabelVariant = 'primaryTitle' } =
+  const { entityRef, hideIcon, disableTooltip, defaultKind, defaultNamespace, labelVariant = 'primaryTitle' } =
     props;
 
   const classes = useStyles();
@@ -77,8 +61,7 @@ export const EntityDisplayName = (
     defaultNamespace,
   });
 
-  // Динамически выбираем свойство из entityPresentation
-  const contentTitle = entityPresentation?.[optionLabelVariant as keyof typeof entityPresentation];
+  const contentTitle = entityPresentation?.[labelVariant as keyof typeof entityPresentation];
 
   let content = <>{contentTitle}</>;
 

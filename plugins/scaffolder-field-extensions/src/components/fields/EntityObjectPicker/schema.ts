@@ -1,18 +1,3 @@
-/*
- * Copyright 2022 The Backstage Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 import { z } from 'zod';
 import { makeFieldSchemaFromZod } from '@backstage/plugin-scaffolder';
 
@@ -29,8 +14,8 @@ export const entityQueryFilterExpressionSchema = z.record(
 /**
  * @public
  */
-export const ExtendedEntityPickerFieldSchema = makeFieldSchemaFromZod(
-  z.string(),
+export const EntityObjectPickerFieldSchema = makeFieldSchemaFromZod(
+  z.record(z.any()),
   z.object({
     /**
      * @deprecated Use `catalogFilter` instead.
@@ -62,11 +47,7 @@ export const ExtendedEntityPickerFieldSchema = makeFieldSchemaFromZod(
       .or(entityQueryFilterExpressionSchema)
       .optional()
       .describe('List of key-value filter expression for entities'),
-    optionValuePath: z
-      .string()
-      .optional()
-      .describe('Value of component used as value of picker'),
-    optionLabelVariant: z
+    labelVariant: z
       .string()
       .optional()
       .describe('Variant of displaying options labels (entityRef, primaryTitle, secondaryTitle)')
@@ -75,20 +56,20 @@ export const ExtendedEntityPickerFieldSchema = makeFieldSchemaFromZod(
 
 /**
  * The input props that can be specified under `ui:options` for the
- * `ExtendedEntityPicker` field extension.
+ * `EntityObjectPicker` field extension.
  *
  * @public
  */
-export type ExtendedEntityPickerUiOptions =
-  typeof ExtendedEntityPickerFieldSchema.uiOptionsType;
+export type EntityObjectPickerUiOptions =
+  typeof EntityObjectPickerFieldSchema.uiOptionsType;
 
-export type ExtendedEntityPickerProps = typeof ExtendedEntityPickerFieldSchema.type;
+export type EntityObjectPickerProps = typeof EntityObjectPickerFieldSchema.type;
 
-export const ExtendedEntityPickerSchema = ExtendedEntityPickerFieldSchema.schema;
+export const EntityObjectPickerSchema = EntityObjectPickerFieldSchema.schema;
 
-export type ExtendedEntityPickerFilterQuery = z.TypeOf<
+export type EntityObjectPickerFilterQuery = z.TypeOf<
   typeof entityQueryFilterExpressionSchema
 >;
 
-export type ExtendedEntityPickerFilterQueryValue =
-ExtendedEntityPickerFilterQuery[keyof ExtendedEntityPickerFilterQuery];
+export type EntityObjectPickerFilterQueryValue =
+EntityObjectPickerFilterQuery[keyof EntityObjectPickerFilterQuery];
