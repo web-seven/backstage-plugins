@@ -1,5 +1,5 @@
 {
-  "name": "@web-seven/scaffolder-fields-extensions",
+  "name": "@web-seven/scaffolder-field-extensions",
   "version": "0.0.1",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -14,7 +14,7 @@
     "role": "frontend-plugin",
     "pluginId": "extended-entity-picker",
     "pluginPackages": [
-      "@web-seven/scaffolder-fields-extensions"
+      "@web-seven/scaffolder-field-extensions"
     ]
   },
   "sideEffects": false,
