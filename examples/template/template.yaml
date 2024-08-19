@@ -1,74 +1,139 @@
 apiVersion: scaffolder.backstage.io/v1beta3
-# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
 kind: Template
 metadata:
-  name: example-nodejs-template
-  title: Example Node.js Template
-  description: An example template for the scaffolder that creates a simple Node.js service
+  name: test
+  title: Test
 spec:
-  owner: user:guest
-  type: service
-
-  # These parameters are used to generate the input form in the frontend, and are
-  # used to gather input data for the execution of the template.
+  owner: administrator
+  type: platform.digando.io
   parameters:
-    - title: Fill in some steps
-      required:
-        - name
+    - title: Database parameters
+      type: object
       properties:
-        name:
-          title: Name
+      
+        group:
           type: string
-          description: Unique name of the component
-          ui:autofocus: true
-          ui:options:
-            rows: 5
-    - title: Choose a location
-      required:
-        - repoUrl
+          ui:widget: hidden
+          default: platform.digando.io
+        version:
+          type: string
+          ui:widget: hidden
+          default: v1alpha1
+        kind:
+          type: string
+          ui:widget: hidden
+          default: Database
+        plural:
+          type: string
+          ui:widget: hidden
+          default: databases
+        metadata:
+          title: Metadata
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              title: Database name
+              type: object
+              ui:field: EntityObjectPicker
+              ui:options:
+                labelVariant: primaryTitle
+            annotations:
+              title: Annotations
+              type: object
+              properties:
+                backstage.io/title:
+                  title: Database title
+                  type: string
+                backstage.io/plural:
+                  type: string
+                  ui:widget: hidden
+                  default: databases
+    - title: Deletion Policy
+      type: object
       properties:
-        repoUrl:
-          title: Repository Location
+        deletionPolicy:
           type: string
-          ui:field: RepoUrlPicker
+          default: Orphan
+          enum:
+            - Orphan
+            - Delete
+          title: Deletion Policy
+    - title: Namespace
+      type: object
+      properties:
+        namespace:
+          type: string
+          title: Namespace
+    - title: Network
+      type: object
+      properties:
+        network:
+          type: string
+          refType: compute.gcp.upbound.io/v1beta1/networks
+          title: Network
+          ui:field: EntityPicker
           ui:options:
-            allowedHosts:
-              - github.com
-
-  # These steps are executed in the scaffolder backend, using data that we gathered
-  # via the parameters above.
+            allowArbitraryValues: false
+            catalogFilter:
+              - kind: Resource
+                spec.api: compute.gcp.upbound.io/v1beta1/networks
+    - title: Project Id
+      type: object
+      properties:
+        projectId:
+          type: string
+          title: Project Id
+    - title: Region
+      type: object
+      properties:
+        region:
+          type: string
+          title: Region
+    - title: Root Password
+      type: object
+      properties:
+        rootPassword:
+          type: string
+          title: Root Password
+    - title: Environemnt
+      properties:
+        environment:
+          title: Environment
+          type: string
+          ui:field: EntityPicker
+          ui:options:
+            allowArbitraryValues: false
+            catalogFilter:
+              - kind: Environment
   steps:
-    # Each step executes an action, in this case one templates files into the working directory.
-    - id: fetch-base
-      name: Fetch Base
-      action: fetch:template
+    - id: manifest
+      name: Create Manifest
+      action: catalog:write
       input:
-        url: ./content
-        values:
-          name: ${{ parameters.name }}
-
-    # This step publishes the contents of the working directory to GitHub.
-    - id: publish
-      name: Publish
-      action: publish:github
-      input:
-        allowedHosts: ['github.com']
-        description: This is ${{ parameters.name }}
-        repoUrl: ${{ parameters.repoUrl }}
-
-    # The final step is to register our new component in the catalog.
-    - id: register
-      name: Register
-      action: catalog:register
-      input:
-        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
-        catalogInfoPath: '/catalog-info.yaml'
-
-  # Outputs are displayed to the user after a successful execution of the template.
+        entity:
+          apiVersion: ${{ parameters.group }}/${{ parameters.version }}
+          kind: ${{ parameters.kind }}
+          metadata:
+            name: ${{ parameters.metadata.name }}
+            annotations:
+              backstage.io/title: ${{ parameters.metadata.annotations['backstage.io/title'] }}
+              backstage.io/plural: ${{ parameters.metadata.annotations['backstage.io/plural'] }}
+              backstage.io/entity-relations: "[\"${{ parameters.network | parseEntityRef |
+                pick('name') }}\",\"${{ parameters.providerConfigRef.gcp.name |
+                parseEntityRef | pick('name') }}\"]"
+          spec:
+            deletionPolicy: ${{ parameters.deletionPolicy }}
+            namespace: ${{ parameters.namespace }}
+            network: ${{ parameters.network }}
+            projectId: ${{ parameters.projectId }}
+            providerConfigRef: ${{ parameters.providerConfigRef }}
+            region: ${{ parameters.region }}
+            rootPassword: ${{ parameters.rootPassword }}
+        filePath: ${{ parameters.metadata.name }}.${{ parameters.kind }}.${{
+          parameters.group }}.${{ parameters.version }}.manifest.yaml
   output:
-    links:
-      - title: Repository
-        url: ${{ steps['publish'].output.remoteUrl }}
-      - title: Open in catalog
-        icon: catalog
-        entityRef: ${{ steps['register'].output.entityRef }}
+    text:
+      - title: More information
+        content: ${{ steps['publish'].output.remoteUrl }}

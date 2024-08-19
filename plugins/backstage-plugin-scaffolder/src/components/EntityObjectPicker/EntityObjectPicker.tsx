@@ -20,7 +20,6 @@ import {
 import {
   CompoundEntityRef,
   Entity,
-  parseEntityRef,
   stringifyEntityRef,
 } from '@backstage/catalog-model';
 import { useApi } from '@backstage/core-plugin-api';
@@ -38,23 +37,23 @@ import Autocomplete, {
 import React, { useCallback, useEffect } from 'react';
 import useAsync from 'react-use/esm/useAsync';
 import {
-  ExtendedEntityPickerFilterQueryValue,
-  ExtendedEntityPickerProps,
-  ExtendedEntityPickerUiOptions,
-  ExtendedEntityPickerFilterQuery,
+  EntityObjectPickerFilterQueryValue,
+  EntityObjectPickerProps,
+  EntityObjectPickerUiOptions,
+  EntityObjectPickerFilterQuery,
 } from './schema';
 import { VirtualizedListbox } from './VirtualizedListbox';
-import { EntityDisplayName } from '../EntityDisplayName'
+import { EntityDisplayName } from '../EntityDisplayName';
 
-export { ExtendedEntityPickerSchema } from './schema';
+export { EntityObjectPickerSchema } from './schema';
 
 /**
- * The underlying component that is rendered in the form for the `ExtendedEntityPicker`
+ * The underlying component that is rendered in the form for the `EntityObjectPicker`
  * field extension.
  *
  * @public
  */
-export const ExtendedEntityPicker = (props: ExtendedEntityPickerProps) => {
+export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
   const {
     onChange,
     schema: { title = 'Entity', description = 'An entity from the catalog' },
@@ -64,38 +63,28 @@ export const ExtendedEntityPicker = (props: ExtendedEntityPickerProps) => {
     formData,
     idSchema,
   } = props;
+
+  // Build a filter for querying catalog entities based on the uiSchema provided in props.
   const catalogFilter = buildCatalogFilter(uiSchema);
-  const defaultKind = uiSchema['ui:options']?.defaultKind;
-  const defaultNamespace =
-    uiSchema['ui:options']?.defaultNamespace || undefined;
 
-  const optionValuePath = uiSchema['ui:options']?.optionValuePath ?? '';
+  // Determine the variant of label that will be displayed for each option in the picker.
+  let labelVariant = uiSchema['ui:options']?.labelVariant;
 
-  let optionLabelVariant = uiSchema['ui:options']?.optionLabelVariant;
-  
-  optionLabelVariant = optionLabelVariant && ['entityRef', 'primaryTitle', 'secondaryTitle'].includes(optionLabelVariant)
-    ? optionLabelVariant
-    : 'entityRef';
+  labelVariant =
+    labelVariant &&
+    ['entityRef', 'primaryTitle', 'secondaryTitle'].includes(labelVariant)
+      ? labelVariant
+      : 'entityRef';
 
   const catalogApi = useApi(catalogApiRef);
   const entityPresentationApi = useApi(entityPresentationApiRef);
 
+  // Fetch entities from the catalog and build a map of entity references to presentation snapshots.
   const { value: entities, loading } = useAsync(async () => {
-    const fields = [
-      'metadata.name',
-      'metadata.namespace',
-      'metadata.title',
-      'kind',
-    ];
-
-    if (!fields.includes(optionValuePath) && Boolean(optionValuePath)) {
-      fields.push(optionValuePath);
-    }
-
     const { items } = await catalogApi.getEntities(
       catalogFilter
-        ? { filter: catalogFilter, fields }
-        : { filter: undefined, fields },
+        ? { filter: catalogFilter }
+        : { filter: undefined }
     );
 
     const entityRefToPresentation = new Map<
@@ -117,92 +106,51 @@ export const ExtendedEntityPicker = (props: ExtendedEntityPickerProps) => {
     return { catalogEntities: items, entityRefToPresentation };
   });
 
-  const allowArbitraryValues =
-    uiSchema['ui:options']?.allowArbitraryValues ?? true;
-
-  const getLabel = useCallback(
-    (freeSoloValue: string) => {
-      try {
-        // Will throw if defaultKind or defaultNamespace are not set
-        const parsedRef = parseEntityRef(freeSoloValue, {
-          defaultKind,
-          defaultNamespace,
-        });
-
-        return getOptionValue(parsedRef);
-      } catch (err) {
-        return freeSoloValue;
-      }
-    },
-    [defaultKind, defaultNamespace],
-  );
-
+  // Handle changes to the selected entity in the picker.
   const onSelect = useCallback(
-    (_: any, ref: any | null, reason: AutocompleteChangeReason) => {
-      // ref can either be a string from free solo entry or
-
+    (_: any, ref: Entity | null, reason: AutocompleteChangeReason) => {
       if (typeof ref !== 'string') {
-        // if ref does not exist: pass 'undefined' to trigger validation for required value
-        const valueToSelect = ref
-          ? getOptionValue(ref)
-          : undefined;
-
-        onChange(valueToSelect);
+        // If no entity is selected, trigger validation for required fields.
+        onChange(ref ? ref : undefined);  
       } else {
         if (reason === 'blur' || reason === 'create-option') {
-          // Add in default namespace, etc.
-          let entityRef = ref;
-          try {
-            // Attempt to parse the entity ref into it's full form.
-            entityRef = stringifyEntityRef(
-              parseEntityRef(ref as string, {
-                defaultKind,
-                defaultNamespace,
-              }),
-            );
-          } catch (err) {
-            // If the passed in value isn't an entity ref, do nothing.
-          }
-          // We need to check against formData here as that's the previous value for this field.
-          if (formData !== ref || allowArbitraryValues) {
-            const valueToSelect = optionValuePath ? ref : entityRef;
-            onChange(valueToSelect);
+          const entityToSelect = entities?.catalogEntities.find(
+            e => getOptionLabel(e) === ref,
+          );
+
+          if (formData !== entityToSelect) {
+            onChange(entityToSelect);
           }
         }
       }
     },
-    [onChange, formData, defaultKind, defaultNamespace, allowArbitraryValues],
+    [onChange, formData],
   );
 
-  // Since free solo can be enabled, attempt to parse as a full entity ref first, then fall
-  // back to the given value.
-  const selectedEntity =
-    entities?.catalogEntities.find(e => getOptionValue(e) === formData) ?? 
-    (allowArbitraryValues && formData ? getLabel(formData) : '');
-      
-  useEffect(() => {
-    if (entities?.catalogEntities.length === 1 && selectedEntity === '') {
-      const firstEntity = entities.catalogEntities[0];
-      const valueToSelect = getOptionValue(firstEntity);
+  // Find the currently selected entity from the fetched entities.
+  const selectedEntity = entities?.catalogEntities.find(e => e === formData);
 
-      onChange(valueToSelect);
+  // If only one entity is available, select it automatically.
+  useEffect(() => {
+    if (
+      entities?.catalogEntities.length === 1 &&
+      selectedEntity === undefined
+    ) {
+      const firstEntity = entities.catalogEntities[0];
+
+      onChange(firstEntity);
     }
   }, [entities, onChange, selectedEntity]);
 
+  // Get the label to display for a given entity based on the chosen label variant.
   function getOptionLabel(ref: Entity | CompoundEntityRef) {
     const presentation = entities?.entityRefToPresentation.get(
       stringifyEntityRef(ref),
     );
 
     return presentation?.[
-      optionLabelVariant as keyof EntityRefPresentationSnapshot
+      labelVariant as keyof EntityRefPresentationSnapshot
     ] as string;
-  }
-
-  function getOptionValue(ref: Entity | CompoundEntityRef) {
-    return optionValuePath
-      ? getValueFromEntityRef(ref as Entity, optionValuePath)
-      : stringifyEntityRef(ref as Entity);
   }
 
   return (
@@ -219,11 +167,10 @@ export const ExtendedEntityPicker = (props: ExtendedEntityPickerProps) => {
         onChange={onSelect}
         options={entities?.catalogEntities || []}
         getOptionLabel={option => {
-          // option can be a string due to freeSolo.
           return typeof option === 'string' ? option : getOptionLabel(option);
         }}
         autoSelect
-        freeSolo={allowArbitraryValues}
+        freeSolo={false}
         renderInput={params => (
           <TextField
             {...params}
@@ -236,7 +183,12 @@ export const ExtendedEntityPicker = (props: ExtendedEntityPickerProps) => {
             InputProps={params.InputProps}
           />
         )}
-        renderOption={option => <EntityDisplayName entityRef={option} optionLabelVariant={optionLabelVariant} />}
+        renderOption={option => (
+          <EntityDisplayName
+            entityRef={option}
+            labelVariant={labelVariant}
+          />
+        )}
         filterOptions={createFilterOptions<Entity>({
           stringify: option => getOptionLabel(option),
         })}
@@ -247,13 +199,13 @@ export const ExtendedEntityPicker = (props: ExtendedEntityPickerProps) => {
 };
 
 /**
- * Converts a especial `{exists: true}` value to the `CATALOG_FILTER_EXISTS` symbol.
+ * Converts a special `{exists: true}` value to the `CATALOG_FILTER_EXISTS` symbol.
  *
  * @param value - The value to convert.
  * @returns The converted value.
  */
 function convertOpsValues(
-  value: Exclude<ExtendedEntityPickerFilterQueryValue, Array<any>>,
+  value: Exclude<EntityObjectPickerFilterQueryValue, Array<any>>,
 ): string | symbol {
   if (typeof value === 'object' && value.exists) {
     return CATALOG_FILTER_EXISTS;
@@ -262,16 +214,16 @@ function convertOpsValues(
 }
 
 /**
- * Converts schema filters to entity filter query, replacing `{exists:true}` values
+ * Converts schema filters to an entity filter query, replacing `{exists:true}` values
  * with the constant `CATALOG_FILTER_EXISTS`.
  *
  * @param schemaFilters - An object containing schema filters with keys as filter names
  * and values as filter values.
  * @returns An object with the same keys as the input object, but with `{exists:true}` values
- * transformed to `CATALOG_FILTER_EXISTS` symbol.
+ * transformed to the `CATALOG_FILTER_EXISTS` symbol.
  */
 function convertSchemaFiltersToQuery(
-  schemaFilters: ExtendedEntityPickerFilterQuery,
+  schemaFilters: EntityObjectPickerFilterQuery,
 ): Exclude<EntityFilterQuery, Array<any>> {
   const query: EntityFilterQuery = {};
 
@@ -288,18 +240,20 @@ function convertSchemaFiltersToQuery(
 
 /**
  * Builds an `EntityFilterQuery` based on the `uiSchema` passed in.
- * If `catalogFilter` is specified in the `uiSchema`, it is converted to a `EntityFilterQuery`.
- * If `allowedKinds` is specified in the `uiSchema` will support the legacy `allowedKinds` option.
+ * If `catalogFilter` is specified in the `uiSchema`, it is converted to an `EntityFilterQuery`.
+ * If `allowedKinds` is specified in the `uiSchema`, it will support the legacy `allowedKinds` option.
  *
- * @param uiSchema The `uiSchema` of an `ExtendedEntityPicker` component.
+ * @param uiSchema - The `uiSchema` of an `EntityObjectPicker` component.
  * @returns An `EntityFilterQuery` based on the `uiSchema`, or `undefined` if `catalogFilter` is not specified in the `uiSchema`.
  */
 function buildCatalogFilter(
-  uiSchema: ExtendedEntityPickerProps['uiSchema'],
+  uiSchema: EntityObjectPickerProps['uiSchema'],
 ): EntityFilterQuery | undefined {
   const allowedKinds = uiSchema['ui:options']?.allowedKinds;
 
-  const catalogFilter: ExtendedEntityPickerUiOptions['catalogFilter'] | undefined =
+  const catalogFilter:
+    | EntityObjectPickerUiOptions['catalogFilter']
+    | undefined =
     uiSchema['ui:options']?.catalogFilter ||
     (allowedKinds && { kind: allowedKinds });
 
@@ -312,14 +266,4 @@ function buildCatalogFilter(
   }
 
   return convertSchemaFiltersToQuery(catalogFilter);
-}
-
-function getValueByPath(entity: Entity, path: string): string {
-  return path
-    .split('.')
-    .reduce((acc: any, part: string) => acc && acc[part], entity);
-}
-
-function getValueFromEntityRef(entity: Entity, key: string) {
-  return getValueByPath(entity, key);
 }

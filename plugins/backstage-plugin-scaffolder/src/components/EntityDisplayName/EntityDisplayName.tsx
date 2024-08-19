@@ -57,7 +57,7 @@ export type EntityDisplayNameProps = {
   disableTooltip?: boolean;
   defaultKind?: string;
   defaultNamespace?: string;
-  optionLabelVariant?: string;
+  labelVariant?: string;
 };
 
 /**
@@ -68,7 +68,7 @@ export type EntityDisplayNameProps = {
 export const EntityDisplayName = (
   props: EntityDisplayNameProps,
 ): JSX.Element => {
-  const { entityRef, hideIcon, disableTooltip, defaultKind, defaultNamespace, optionLabelVariant = 'primaryTitle' } =
+  const { entityRef, hideIcon, disableTooltip, defaultKind, defaultNamespace, labelVariant = 'primaryTitle' } =
     props;
 
   const classes = useStyles();
@@ -78,7 +78,7 @@ export const EntityDisplayName = (
   });
 
   // Динамически выбираем свойство из entityPresentation
-  const contentTitle = entityPresentation?.[optionLabelVariant as keyof typeof entityPresentation];
+  const contentTitle = entityPresentation?.[labelVariant as keyof typeof entityPresentation];
 
   let content = <>{contentTitle}</>;
 
