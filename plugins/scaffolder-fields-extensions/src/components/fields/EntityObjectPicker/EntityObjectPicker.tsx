@@ -27,8 +27,8 @@ import {
   EntityObjectPickerUiOptions,
   EntityObjectPickerFilterQuery,
 } from './schema';
-import { VirtualizedListbox } from './VirtualizedListbox';
-import { EntityDisplayName } from '../EntityDisplayName';
+import { VirtualizedListbox } from '../../VirtualizedListBox';
+import { EntityDisplayName } from '../../EntityDisplayName';
 
 export { EntityObjectPickerSchema } from './schema';
 

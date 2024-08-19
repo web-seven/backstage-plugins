@@ -1,1 +1,0 @@
-export { backstagePluginScaffolder, EntityObjectPickerFieldExtension } from './plugin';

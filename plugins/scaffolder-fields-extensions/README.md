@@ -1,8 +1,4 @@
-# Entity Object Picker Field Extension
-
-Welcome to the Object Picker Field Extension plugin!
-
-## Backstage EntityPicker Field Extension Plugin
+# EntityObjectPicker Field Extension Plugin
 
 This plugin for Backstage provides a `ScaffolderFieldExtension` that enhances the functionality of the `EntityPicker` field. The plugin allows you to select and use the entire object of the selected entity as the value.
 
@@ -20,13 +16,7 @@ Configuration is done through the field's settings in the template. The followin
 To use the field extension, you need to import it and add the following section to the `ScaffolderPage` route in `App.tsx`:
 
 ```javascript
-import { backstagePluginScaffolder, EntityObjectPickerFieldExtension } from '@web-seven/backstage-plugin-scaffolder';
-
-const app = createApp({
-  plugins: [
-    backstagePluginScaffolder
-  ]
-});
+import { EntityObjectPickerFieldExtension } from '@web-seven/scaffolder-fields-extensions';
 
 <Route path="/create" element={<ScaffolderPage />}>
   <ScaffolderFieldExtensions>
@@ -35,7 +25,7 @@ const app = createApp({
 </Route>
 ```
 
-Example configuration of the `EntityPicker` field in a template:
+Example configuration of the `EntityObjectPicker` field in a template:
 
 ```yaml
 ui:field: EntityObjectPicker
