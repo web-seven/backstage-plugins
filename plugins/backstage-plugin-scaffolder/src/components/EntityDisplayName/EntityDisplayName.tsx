@@ -77,7 +77,6 @@ export const EntityDisplayName = (
     defaultNamespace,
   });
 
-  // Динамически выбираем свойство из entityPresentation
   const contentTitle = entityPresentation?.[labelVariant as keyof typeof entityPresentation];
 
   let content = <>{contentTitle}</>;
