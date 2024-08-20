@@ -1,6 +1,6 @@
 {
   "name": "@web-seven/scaffolder-field-extensions",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -11,7 +11,11 @@
     "types": "dist/index.d.ts"
   },
   "backstage": {
-    "role": "frontend-plugin"
+    "role": "frontend-plugin",
+    "pluginId": "scaffolder-field-extensions",
+    "pluginPackages": [
+      "@web-seven/scaffolder-field-extensions"
+    ]
   },
   "sideEffects": false,
   "scripts": {
