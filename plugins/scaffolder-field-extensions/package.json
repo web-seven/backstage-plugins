@@ -10,6 +10,9 @@
     "main": "dist/index.esm.js",
     "types": "dist/index.d.ts"
   },
+  "backstage": {
+    "role": "frontend-plugin"
+  },
   "sideEffects": false,
   "scripts": {
     "start": "backstage-cli package start",
