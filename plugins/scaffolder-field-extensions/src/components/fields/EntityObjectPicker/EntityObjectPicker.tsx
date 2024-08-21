@@ -16,10 +16,9 @@ import {
 import TextField from '@material-ui/core/TextField';
 import FormControl from '@material-ui/core/FormControl';
 import Autocomplete, {
-  AutocompleteChangeReason,
   createFilterOptions,
 } from '@material-ui/lab/Autocomplete';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import useAsync from 'react-use/esm/useAsync';
 import {
   EntityObjectPickerFilterQueryValue,
@@ -76,7 +75,7 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
       string,
       EntityRefPresentationSnapshot
     >(
-      await Promise.all(
+      await Promise.all(        
         items.map(async item => {
           const presentation = await entityPresentationApi.forEntity(item)
             .promise;
@@ -93,42 +92,35 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
 
   // Handle changes to the selected entity in the picker.
   const onSelect = useCallback(
-    (_: any, ref: Entity | null, reason: AutocompleteChangeReason) => {
-      if (typeof ref !== 'string') {
-        // If no entity is selected, trigger validation for required fields.
+    (_: any, ref: Entity | null) => {
         onChange(ref ? ref : undefined);  
-      } else {
-        if (reason === 'blur' || reason === 'create-option') {
-          const entityToSelect = entities?.catalogEntities.find(
-            e => getOptionLabel(e) === ref,
-          );
-
-          if (formData !== entityToSelect) {
-            onChange(entityToSelect);
-          }
-        }
-      }
     },
     [onChange, formData],
   );
 
-  // Find the currently selected entity from the fetched entities.
-  const selectedEntity = entities?.catalogEntities.find(e => e === formData);
+  const [inputValue, setInputValue] = useState<string>('');
+
+  useEffect(() => {
+      if(entities && formData && Object.keys(formData as object).length) {        
+        setInputValue(getOptionLabel(formData as Entity));
+      } 
+
+  }, [formData, entities]);
+  
 
   // If only one entity is available, select it automatically.
   useEffect(() => {
     if (
-      entities?.catalogEntities.length === 1 &&
-      selectedEntity === undefined
+      entities?.catalogEntities.length === 1
     ) {
       const firstEntity = entities.catalogEntities[0];
-
+      setInputValue(getOptionLabel(firstEntity));
       onChange(firstEntity);
     }
-  }, [entities, onChange, selectedEntity]);
+  }, [entities, onChange]);
 
   // Get the label to display for a given entity based on the chosen label variant.
-  function getOptionLabel(ref: Entity | CompoundEntityRef) {
+  function getOptionLabel(ref: Entity | CompoundEntityRef) {        
     const presentation = entities?.entityRefToPresentation.get(
       stringifyEntityRef(ref),
     );
@@ -136,7 +128,7 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
     return presentation?.[
       labelVariant as keyof EntityRefPresentationSnapshot
     ] as string;
-  }
+  }  
 
   return (
     <FormControl
@@ -145,14 +137,15 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
       error={rawErrors?.length > 0 && !formData}
     >
       <Autocomplete
+        inputValue={inputValue}
+        onInputChange={(_, newValue) => setInputValue(newValue)}
         disabled={entities?.catalogEntities.length === 1}
         id={idSchema?.$id}
-        value={selectedEntity}
         loading={loading}
         onChange={onSelect}
         options={entities?.catalogEntities || []}
         getOptionLabel={option => {
-          return typeof option === 'string' ? option : getOptionLabel(option);
+          return getOptionLabel(option);
         }}
         autoSelect
         freeSolo={false}
