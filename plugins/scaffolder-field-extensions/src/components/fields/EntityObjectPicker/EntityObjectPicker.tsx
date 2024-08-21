@@ -66,16 +66,14 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
   // Fetch entities from the catalog and build a map of entity references to presentation snapshots.
   const { value: entities, loading } = useAsync(async () => {
     const { items } = await catalogApi.getEntities(
-      catalogFilter
-        ? { filter: catalogFilter }
-        : { filter: undefined }
+      catalogFilter ? { filter: catalogFilter } : { filter: undefined },
     );
 
     const entityRefToPresentation = new Map<
       string,
       EntityRefPresentationSnapshot
     >(
-      await Promise.all(        
+      await Promise.all(
         items.map(async item => {
           const presentation = await entityPresentationApi.forEntity(item)
             .promise;
@@ -93,7 +91,7 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
   // Handle changes to the selected entity in the picker.
   const onSelect = useCallback(
     (_: any, ref: Entity | null) => {
-        onChange(ref ? ref : undefined);  
+      onChange(ref ? ref : undefined);
     },
     [onChange, formData],
   );
@@ -101,18 +99,14 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
   const [inputValue, setInputValue] = useState<string>('');
 
   useEffect(() => {
-      if(entities && formData && Object.keys(formData as object).length) {        
-        setInputValue(getOptionLabel(formData as Entity));
-      } 
-
+    if (entities && formData && Object.keys(formData as object).length) {
+      setInputValue(getOptionLabel(formData as Entity));
+    }
   }, [formData, entities]);
-  
 
   // If only one entity is available, select it automatically.
   useEffect(() => {
-    if (
-      entities?.catalogEntities.length === 1
-    ) {
+    if (entities?.catalogEntities.length === 1) {
       const firstEntity = entities.catalogEntities[0];
       setInputValue(getOptionLabel(firstEntity));
       onChange(firstEntity);
@@ -120,7 +114,7 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
   }, [entities, onChange]);
 
   // Get the label to display for a given entity based on the chosen label variant.
-  function getOptionLabel(ref: Entity | CompoundEntityRef) {        
+  function getOptionLabel(ref: Entity | CompoundEntityRef) {
     const presentation = entities?.entityRefToPresentation.get(
       stringifyEntityRef(ref),
     );
@@ -128,7 +122,7 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
     return presentation?.[
       labelVariant as keyof EntityRefPresentationSnapshot
     ] as string;
-  }  
+  }
 
   return (
     <FormControl
@@ -162,10 +156,7 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
           />
         )}
         renderOption={option => (
-          <EntityDisplayName
-            entityRef={option}
-            labelVariant={labelVariant}
-          />
+          <EntityDisplayName entityRef={option} labelVariant={labelVariant} />
         )}
         filterOptions={createFilterOptions<Entity>({
           stringify: option => getOptionLabel(option),
