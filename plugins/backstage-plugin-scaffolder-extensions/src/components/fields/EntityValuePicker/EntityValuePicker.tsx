@@ -28,8 +28,8 @@ import {
   EntityValuePickerUiOptions,
   EntityValuePickerFilterQuery,
 } from './schema';
-import { VirtualizedListbox } from '../../VirtualizedListBox';
-import { EntityDisplayName } from '../../EntityDisplayName'
+import { VirtualizedListbox } from '../../fieldsRelated/VirtualizedListBox';
+import { EntityDisplayName } from '../../fieldsRelated/EntityDisplayName'
 
 export { EntityValuePickerSchema } from './schema';
 

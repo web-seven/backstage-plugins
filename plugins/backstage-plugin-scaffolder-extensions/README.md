@@ -23,7 +23,7 @@ Configuration is done through the field's settings in the template. The followin
 To use the field extension, you need to import it and add the following section to the `ScaffolderPage` route in `App.tsx`:
 
 ```javascript
-import { EntityObjectPickerFieldExtension, EntityValuePickerFieldExtension } from '@web-seven/scaffolder-field-extensions';
+import { EntityObjectPickerFieldExtension, EntityValuePickerFieldExtension } from '@web-seven/backstage-plugin-scaffolder-extensions';
 
 <Route path="/create" element={<ScaffolderPage />}>
   <ScaffolderFieldExtensions>
