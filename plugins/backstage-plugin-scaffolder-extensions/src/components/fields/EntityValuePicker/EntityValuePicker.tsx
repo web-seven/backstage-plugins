@@ -60,7 +60,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
   
   labelVariant = labelVariant && ['entityRef', 'primaryTitle', 'secondaryTitle'].includes(labelVariant)
     ? labelVariant
-    : 'entityRef';
+    : 'primaryTitle';
 
   const catalogApi = useApi(catalogApiRef);
   const entityPresentationApi = useApi(entityPresentationApiRef);
