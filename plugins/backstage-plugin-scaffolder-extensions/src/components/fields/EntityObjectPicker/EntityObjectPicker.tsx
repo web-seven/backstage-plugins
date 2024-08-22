@@ -26,8 +26,8 @@ import {
   EntityObjectPickerUiOptions,
   EntityObjectPickerFilterQuery,
 } from './schema';
-import { VirtualizedListbox } from '../../VirtualizedListBox';
-import { EntityDisplayName } from '../../EntityDisplayName';
+import { VirtualizedListbox } from '../../fieldsRelated/VirtualizedListBox';
+import { EntityDisplayName } from '../../fieldsRelated/EntityDisplayName';
 
 export { EntityObjectPickerSchema } from './schema';
 
@@ -114,14 +114,18 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
   }, [entities, onChange]);
 
   // Get the label to display for a given entity based on the chosen label variant.
-  function getOptionLabel(ref: Entity | CompoundEntityRef) {
-    const presentation = entities?.entityRefToPresentation.get(
-      stringifyEntityRef(ref),
-    );
+  function getOptionLabel(ref: Entity | CompoundEntityRef) {    
+    try {
+      const presentation = entities?.entityRefToPresentation.get(
+        stringifyEntityRef(ref),
+      );
 
-    return presentation?.[
-      labelVariant as keyof EntityRefPresentationSnapshot
-    ] as string;
+      return presentation?.[
+        labelVariant as keyof EntityRefPresentationSnapshot
+      ] as string;
+    } catch(e) {
+      return '';
+    }
   }
 
   return (
