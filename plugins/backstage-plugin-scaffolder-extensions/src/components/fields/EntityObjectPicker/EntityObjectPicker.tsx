@@ -91,7 +91,7 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
   // Handle changes to the selected entity in the picker.
   const onSelect = useCallback(
     (_: any, ref: Entity | null) => {
-      onChange(ref ? {entityObject: ref} : undefined);
+      onChange(ref ? ref : undefined);
     },
     [onChange, formData],
   );
@@ -100,7 +100,7 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
 
   useEffect(() => {
     if (entities && formData && Object.keys(formData as object).length) {
-      setInputValue(getOptionLabel(formData.entityObject as Entity));
+      setInputValue(getOptionLabel(formData as Entity));
     }
   }, [formData, entities]);
 
@@ -109,12 +109,12 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
     if (entities?.catalogEntities.length === 1) {
       const firstEntity = entities.catalogEntities[0];
       setInputValue(getOptionLabel(firstEntity));
-      onChange({entityObject: firstEntity});
+      onChange(firstEntity);
     }
   }, [entities, onChange]);
 
   // Get the label to display for a given entity based on the chosen label variant.
-  function getOptionLabel(ref: Entity | CompoundEntityRef) {    
+  function getOptionLabel(ref: Entity) {
     try {
       const presentation = entities?.entityRefToPresentation.get(
         stringifyEntityRef(ref),
@@ -123,7 +123,7 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
       return presentation?.[
         labelVariant as keyof EntityRefPresentationSnapshot
       ] as string;
-    } catch(e) {
+    } catch (e) {
       return '';
     }
   }
