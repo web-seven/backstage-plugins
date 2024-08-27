@@ -91,7 +91,7 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
   // Handle changes to the selected entity in the picker.
   const onSelect = useCallback(
     (_: any, ref: Entity | null) => {
-      onChange(ref ? ref : undefined);
+      onChange(ref ? {entityObject: ref} : undefined);
     },
     [onChange, formData],
   );
@@ -100,7 +100,7 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
 
   useEffect(() => {
     if (entities && formData && Object.keys(formData as object).length) {
-      setInputValue(getOptionLabel(formData as Entity));
+      setInputValue(getOptionLabel(formData.entityObject as Entity));
     }
   }, [formData, entities]);
 
@@ -109,7 +109,7 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
     if (entities?.catalogEntities.length === 1) {
       const firstEntity = entities.catalogEntities[0];
       setInputValue(getOptionLabel(firstEntity));
-      onChange(firstEntity);
+      onChange({entityObject: firstEntity});
     }
   }, [entities, onChange]);
 
