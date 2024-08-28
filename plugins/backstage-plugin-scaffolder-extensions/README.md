@@ -1,6 +1,6 @@
 # EntityObjectPicker Field Extension Plugin
 
-This plugin for Backstage provides a `ScaffolderFieldExtensions` that enhances the functionality of the `EntityPicker` field. The plugin allows you to select and use as value the entire object of the selected entity or select which field of Entity will be used as value.
+This plugin for Backstage provides a `ScaffolderFieldExtensions` that enhances the functionality of the `EntityPicker` field. The plugin allows you to select and use as value the entire object of the selected entity or select which field of Entity will be used as value. Also this plugin provide custom ReviewStepComponent to show in preview link to selected entity.
 
 ## Configuration
 
@@ -23,7 +23,10 @@ Configuration is done through the field's settings in the template. The followin
 To use the field extension, you need to import it and add the following section to the `ScaffolderPage` route in `App.tsx`:
 
 ```javascript
-import { EntityObjectPickerFieldExtension, EntityValuePickerFieldExtension } from '@web-seven/backstage-plugin-scaffolder-extensions';
+import { 
+  EntityObjectPickerFieldExtension, 
+  EntityValuePickerFieldExtension 
+} from '@web-seven/backstage-plugin-scaffolder-extensions';
 
 <Route path="/create" element={<ScaffolderPage />}>
   <ScaffolderFieldExtensions>
@@ -32,6 +35,17 @@ import { EntityObjectPickerFieldExtension, EntityValuePickerFieldExtension } fro
   </ScaffolderFieldExtensions>
 </Route>
 ```
+
+To use the custom ReviewStepComponent, you need to import it and add the following prop for `ScaffolderPage` component in `App.tsx`:
+
+```javascript
+import { ReviewStepComponent } from '@web-seven/backstage-plugin-scaffolder-extensions';
+
+<Route path="/create" element={<ScaffolderPage components={{ReviewStepComponent}} />}>
+  ...
+</Route>
+```
+
 
 Example configuration of the `EntityObjectPicker` field in a template:
 
@@ -48,3 +62,4 @@ ui:field: EntityObjectPicker
 ui:options:
   labelVariant: primaryTitle,
   valuePath: metadata.name
+```

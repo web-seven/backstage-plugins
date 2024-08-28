@@ -37,7 +37,11 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
-import { EntityObjectPickerFieldExtension, EntityValuePickerFieldExtension } from '@web-seven/backstage-plugin-scaffolder-extensions';
+import { 
+  EntityObjectPickerFieldExtension, 
+  EntityValuePickerFieldExtension, 
+  ReviewStepComponent 
+} from '@web-seven/backstage-plugin-scaffolder-extensions';
 
 const app = createApp({
   apis,
@@ -82,7 +86,7 @@ const routes = (
         <ReportIssue />
       </TechDocsAddons>
     </Route>
-    <Route path="/create" element={<ScaffolderPage />}>
+    <Route path="/create" element={<ScaffolderPage components={{ReviewStepComponent}} />}>
       <ScaffolderFieldExtensions>
         <EntityObjectPickerFieldExtension />
         <EntityValuePickerFieldExtension />

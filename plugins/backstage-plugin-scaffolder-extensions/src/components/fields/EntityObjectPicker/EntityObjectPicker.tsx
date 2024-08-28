@@ -114,7 +114,7 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
   }, [entities, onChange]);
 
   // Get the label to display for a given entity based on the chosen label variant.
-  function getOptionLabel(ref: Entity | CompoundEntityRef) {    
+  function getOptionLabel(ref: Entity) {
     try {
       const presentation = entities?.entityRefToPresentation.get(
         stringifyEntityRef(ref),
@@ -123,7 +123,7 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
       return presentation?.[
         labelVariant as keyof EntityRefPresentationSnapshot
       ] as string;
-    } catch(e) {
+    } catch (e) {
       return '';
     }
   }
