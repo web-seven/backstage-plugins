@@ -1,6 +1,4 @@
 import React from 'react';
-import { EntityRefLink } from '@backstage/plugin-catalog-react';
-import { JsonObject, JsonValue } from '@backstage/types';
 import {
   ReviewState,
   ParsedTemplateSchema,
@@ -8,6 +6,7 @@ import {
 import { ReviewStepProps } from '@backstage/plugin-scaffolder-react';
 import { Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import { mergeSchemas, replaceEntityObjectWithLink } from '../utils';
 /**
  * Custom review step component
  *
@@ -29,70 +28,15 @@ const useStyles = makeStyles(theme => ({
 
 export const ReviewStepComponent = (props: ReviewStepProps): JSX.Element => {
   const styles = useStyles();
-  const { formData, steps, handleBack, handleCreate } = props;
-
-  function mergeSchemas(steps: ParsedTemplateSchema[]): JsonObject {
-    const mergedSchema = { properties: {} };
-
-    steps.forEach(step => {
-      if (
-        typeof step.mergedSchema.properties === 'object' &&
-        step.mergedSchema.properties !== null
-      ) {
-        Object.assign(
-          mergedSchema.properties,
-          step.mergedSchema.properties,
-        );
-      }
-    });
-
-    return mergedSchema;
-  }
-
-  function replaceEntityObjectWithLink(
-    formData: JsonObject,
-    mergedSchema: JsonObject,
-  ): JsonObject {
-    const newFormData: any = { ...formData };
-
-    for (const key in newFormData) {
-      const value = newFormData[key];
-
-      if (
-        typeof mergedSchema.properties === 'object' &&
-        mergedSchema.properties !== null
-      ) {
-        const fieldSchema: JsonValue | undefined = (mergedSchema.properties as JsonObject)[key];
-
-        if (typeof fieldSchema === 'object' && !Array.isArray(fieldSchema) && fieldSchema !== null) {
-          if (
-            fieldSchema['ui:field'] === 'EntityObjectPicker'
-          ) {
-            newFormData[key] = <EntityRefLink entityRef={value} />;
-          } else if (
-            typeof value === 'object' &&
-            value !== null &&
-            fieldSchema?.type === 'object'
-          ) {
-            newFormData[key] = replaceEntityObjectWithLink(
-              value,
-              fieldSchema,
-            );
-          }
-        }
-      }
-    }
-
-    return newFormData;
-  }
-
-  const mergedSchema = mergeSchemas(steps as ParsedTemplateSchema[]);
-  const updatedFormData = replaceEntityObjectWithLink(formData, mergedSchema);
+  const { formData, handleBack, steps, handleCreate } = props;
 
   return (
     <>
       <ReviewState
-        formState={updatedFormData}
+        formState={replaceEntityObjectWithLink(
+          formData,
+          mergeSchemas(steps as ParsedTemplateSchema[]),
+        )}
         schemas={steps as ParsedTemplateSchema[]}
       />
       <div className={styles.footer}>
