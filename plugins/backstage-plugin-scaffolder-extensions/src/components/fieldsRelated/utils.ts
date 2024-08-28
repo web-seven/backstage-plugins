@@ -41,6 +41,7 @@ export function replaceEntityObjectWithLink(
           fieldSchema['ui:field'] === 'EntityObjectPicker'
         ) {
           newFormData[key] = React.createElement(EntityRefLink, { entityRef: value });
+          fieldSchema['ui:backstage'] = {review: {explode: false}};          
         } else if (
           typeof value === 'object' &&
           value !== null &&
