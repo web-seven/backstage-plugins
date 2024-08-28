@@ -1,7 +1,6 @@
 import React from 'react';
 import { EntityRefLink } from '@backstage/plugin-catalog-react';
-import { Entity } from '@backstage/catalog-model';
-import { JsonObject } from '@backstage/types';
+import { JsonObject, JsonValue } from '@backstage/types';
 import {
   ReviewState,
   ParsedTemplateSchema,
@@ -28,39 +27,72 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-function isEntity(object: any): object is Entity {
-  return (
-    object &&
-    typeof object === 'object' &&
-    'kind' in object &&
-    'metadata' in object &&
-    'apiVersion' in object
-  );
-}
-
 export const ReviewStepComponent = (props: ReviewStepProps): JSX.Element => {
   const styles = useStyles();
   const { formData, steps, handleBack, handleCreate } = props;
-  console.log(formData);
 
-  function replaceEntityObjectWithLink(data: JsonObject): JsonObject {
-    return Object.fromEntries(
-      Object.entries(data).map(([key, value]) => {
-        if (isEntity(value)) {
-          return [key, <EntityRefLink key={key} entityRef={value as Entity} />];
-        }
-        if (typeof value === 'object' && value !== null) {
-          return [key, replaceEntityObjectWithLink(value as JsonObject)];
-        }
-        return [key, value];
-      }),
-    );
+  function mergeSchemas(steps: ParsedTemplateSchema[]): JsonObject {
+    const mergedSchema = { properties: {} };
+
+    steps.forEach(step => {
+      if (
+        typeof step.mergedSchema.properties === 'object' &&
+        step.mergedSchema.properties !== null
+      ) {
+        Object.assign(
+          mergedSchema.properties,
+          step.mergedSchema.properties,
+        );
+      }
+    });
+
+    return mergedSchema;
   }
+
+  function replaceEntityObjectWithLink(
+    formData: JsonObject,
+    mergedSchema: JsonObject,
+  ): JsonObject {
+    const newFormData: any = { ...formData };
+
+    for (const key in newFormData) {
+      const value = newFormData[key];
+
+      if (
+        typeof mergedSchema.properties === 'object' &&
+        mergedSchema.properties !== null
+      ) {
+        const fieldSchema: JsonValue | undefined = (mergedSchema.properties as JsonObject)[key];
+
+        if (typeof fieldSchema === 'object' && !Array.isArray(fieldSchema) && fieldSchema !== null) {
+          if (
+            fieldSchema['ui:field'] === 'EntityObjectPicker'
+          ) {
+            newFormData[key] = <EntityRefLink entityRef={value} />;
+          } else if (
+            typeof value === 'object' &&
+            value !== null &&
+            fieldSchema?.type === 'object'
+          ) {
+            newFormData[key] = replaceEntityObjectWithLink(
+              value,
+              fieldSchema,
+            );
+          }
+        }
+      }
+    }
+
+    return newFormData;
+  }
+
+  const mergedSchema = mergeSchemas(steps as ParsedTemplateSchema[]);
+  const updatedFormData = replaceEntityObjectWithLink(formData, mergedSchema);
 
   return (
     <>
       <ReviewState
-        formState={replaceEntityObjectWithLink(formData)}
+        formState={updatedFormData}
         schemas={steps as ParsedTemplateSchema[]}
       />
       <div className={styles.footer}>
