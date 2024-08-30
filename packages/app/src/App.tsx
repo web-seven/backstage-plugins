@@ -42,6 +42,7 @@ import {
   EntityValuePickerFieldExtension, 
   ReviewStepComponent 
 } from '@web-seven/backstage-plugin-scaffolder-extensions';
+import { ScaffolderExtensionsPage } from '@web-seven/backstage-plugin-scaffolder-extensions/src/plugin';
 
 const app = createApp({
   apis,
@@ -67,6 +68,13 @@ const app = createApp({
   },
 });
 
+const fieldExtensions = (
+  <ScaffolderFieldExtensions>
+    <EntityObjectPickerFieldExtension />
+    <EntityValuePickerFieldExtension />
+  </ScaffolderFieldExtensions>
+);
+
 const routes = (
   <FlatRoutes>
     <Route path="/" element={<Navigate to="catalog" />} />
@@ -87,10 +95,10 @@ const routes = (
       </TechDocsAddons>
     </Route>
     <Route path="/create" element={<ScaffolderPage components={{ReviewStepComponent}} />}>
-      <ScaffolderFieldExtensions>
-        <EntityObjectPickerFieldExtension />
-        <EntityValuePickerFieldExtension />
-      </ScaffolderFieldExtensions>
+      {fieldExtensions}
+    </Route>
+    <Route path="/edit" element={<ScaffolderExtensionsPage components={{ReviewStepComponent}} />}>
+      {fieldExtensions}
     </Route>
     <Route path="/api-docs" element={<ApiExplorerPage />} />
     <Route
