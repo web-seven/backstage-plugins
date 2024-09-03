@@ -30,6 +30,7 @@ import {
 } from './schema';
 import { VirtualizedListbox } from '../../fieldsRelated/VirtualizedListBox';
 import { EntityDisplayName } from '../../fieldsRelated/EntityDisplayName'
+import { getValueFromEntityByPath } from '../../../utils';
 
 export { EntityValuePickerSchema } from './schema';
 
@@ -188,7 +189,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
 
   function getOptionValue(ref: Entity | CompoundEntityRef) {
     return valuePath
-      ? getValueFromEntityRef(ref as Entity, valuePath)
+      ? getValueFromEntityByPath(ref as Entity, valuePath)
       : stringifyEntityRef(ref as Entity);
   }
 
@@ -299,14 +300,4 @@ function buildCatalogFilter(
   }
 
   return convertSchemaFiltersToQuery(catalogFilter);
-}
-
-function getValueByPath(entity: Entity, path: string): string {
-  return path
-    .split('.')
-    .reduce((acc: any, part: string) => acc && acc[part], entity);
-}
-
-function getValueFromEntityRef(entity: Entity, key: string) {
-  return getValueByPath(entity, key);
 }

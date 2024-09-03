@@ -1,0 +1,1 @@
+export { scaffolderExtensionsModuleCustomFilters } from './module';

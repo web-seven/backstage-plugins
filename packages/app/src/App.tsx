@@ -11,7 +11,7 @@ import {
   catalogImportPlugin,
 } from '@backstage/plugin-catalog-import';
 import { ScaffolderPage, scaffolderPlugin } from '@backstage/plugin-scaffolder';
-import { ScaffolderFieldExtensions } from '@backstage/plugin-scaffolder-react'
+import { ScaffolderFieldExtensions } from '@backstage/plugin-scaffolder-react';
 import { orgPlugin } from '@backstage/plugin-org';
 import { SearchPage } from '@backstage/plugin-search';
 import {
@@ -37,10 +37,10 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
-import { 
-  EntityObjectPickerFieldExtension, 
-  EntityValuePickerFieldExtension, 
-  ReviewStepComponent 
+import {
+  EntityObjectPickerFieldExtension,
+  EntityValuePickerFieldExtension,
+  ReviewStepComponent
 } from '@web-seven/backstage-plugin-scaffolder-extensions';
 import { ScaffolderExtensionsPage } from '@web-seven/backstage-plugin-scaffolder-extensions/src/plugin';
 
@@ -68,7 +68,7 @@ const app = createApp({
   },
 });
 
-const fieldExtensions = (
+const customFieldExtensions = (
   <ScaffolderFieldExtensions>
     <EntityObjectPickerFieldExtension />
     <EntityValuePickerFieldExtension />
@@ -94,11 +94,19 @@ const routes = (
         <ReportIssue />
       </TechDocsAddons>
     </Route>
-    <Route path="/create" element={<ScaffolderPage components={{ReviewStepComponent}} />}>
-      {fieldExtensions}
+    <Route
+      path="/create"
+      element={<ScaffolderPage components={{ ReviewStepComponent }} />}
+    >
+      {customFieldExtensions}
     </Route>
-    <Route path="/edit" element={<ScaffolderExtensionsPage components={{ReviewStepComponent}} />}>
-      {fieldExtensions}
+    <Route
+      path="/scaffolder-extensions"
+      element={
+        <ScaffolderExtensionsPage components={{ ReviewStepComponent }} />
+      }
+    >
+      {customFieldExtensions}
     </Route>
     <Route path="/api-docs" element={<ApiExplorerPage />} />
     <Route
