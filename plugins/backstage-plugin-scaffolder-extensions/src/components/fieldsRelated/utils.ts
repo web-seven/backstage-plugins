@@ -58,3 +58,30 @@ export function replaceEntityObjectWithLink(
 
   return newFormData;
 }
+
+export function getValuesBySchema(obj: JsonObject, valuesSchema: JsonObject) {
+  const filledSchema = { ...valuesSchema };
+
+  for (const key in filledSchema) {
+    if(key !== 'schema') {
+      if (typeof filledSchema[key] == 'string') {
+        if(getValueByPath(obj, filledSchema[key])) {
+          filledSchema[key] = getValueByPath(obj, filledSchema[key]);
+        }
+      } else if (
+        filledSchema[key] &&
+        typeof filledSchema[key] == 'object' &&
+        !Array.isArray(filledSchema[key])
+      ) {
+        filledSchema[key] = getValuesBySchema(obj, filledSchema[key]);
+      }
+    }
+  }
+  return filledSchema;
+}
+
+export function getValueByPath(obj: JsonObject, path: string): string {
+  return path
+    .split('.')
+    .reduce((acc: any, part: string) => acc && acc[part], obj);
+}

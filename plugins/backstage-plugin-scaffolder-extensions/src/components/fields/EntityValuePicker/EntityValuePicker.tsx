@@ -5,7 +5,6 @@ import {
 import {
   CompoundEntityRef,
   Entity,
-  parseEntityRef,
   stringifyEntityRef,
 } from '@backstage/catalog-model';
 import { useApi } from '@backstage/core-plugin-api';
@@ -17,10 +16,9 @@ import {
 import TextField from '@material-ui/core/TextField';
 import FormControl from '@material-ui/core/FormControl';
 import Autocomplete, {
-  AutocompleteChangeReason,
   createFilterOptions,
 } from '@material-ui/lab/Autocomplete';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import useAsync from 'react-use/esm/useAsync';
 import {
   EntityValuePickerFilterQueryValue,
@@ -29,9 +27,13 @@ import {
   EntityValuePickerFilterQuery,
 } from './schema';
 import { VirtualizedListbox } from '../../fieldsRelated/VirtualizedListBox';
-import { EntityDisplayName } from '../../fieldsRelated/EntityDisplayName'
-
+import { EntityDisplayName } from '../../fieldsRelated/EntityDisplayName';
+import { JsonObject, JsonValue, JsonArray } from '@backstage/types';
 export { EntityValuePickerSchema } from './schema';
+
+import nunjucks from 'nunjucks';
+import { getValuesBySchema } from '../../fieldsRelated/utils';
+import { AdditionalPicker } from '../../fieldsRelated/AdditionalPicker';
 
 /**
  * The underlying component that is rendered in the form for the `EntityValuePicker`
@@ -41,7 +43,6 @@ export { EntityValuePickerSchema } from './schema';
  */
 export const EntityValuePicker = (props: EntityValuePickerProps) => {
   const {
-    onChange,
     schema: { title = 'Entity', description = 'An entity from the catalog' },
     required,
     uiSchema,
@@ -49,39 +50,36 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
     formData,
     idSchema,
   } = props;
+  const onEntityChange = props.onChange;
   const catalogFilter = buildCatalogFilter(uiSchema);
   const defaultKind = uiSchema['ui:options']?.defaultKind;
   const defaultNamespace =
     uiSchema['ui:options']?.defaultNamespace || undefined;
 
-  const valuePath = uiSchema['ui:options']?.valuePath ?? '';
+  const valuesSchema: JsonObject =
+    typeof uiSchema['ui:options']?.valuesSchema == 'object' &&
+    uiSchema['ui:options']?.valuesSchema
+      ? uiSchema['ui:options']?.valuesSchema
+      : {};
+
+  const valueTemplate = valuesSchema?.template;
+  const [values, setValues] = useState<JsonObject>({});
+  const [entityValues, setEntityValues] = useState<JsonObject>({});
+  const [additionalInputs, setAdditionalInputs] = useState<React.ReactNode[]>([])
 
   let labelVariant = uiSchema['ui:options']?.labelVariant;
-  
-  labelVariant = labelVariant && ['entityRef', 'primaryTitle', 'secondaryTitle'].includes(labelVariant)
-    ? labelVariant
-    : 'primaryTitle';
+
+  labelVariant =
+    labelVariant &&
+    ['entityRef', 'primaryTitle', 'secondaryTitle'].includes(labelVariant)
+      ? labelVariant
+      : 'primaryTitle';
 
   const catalogApi = useApi(catalogApiRef);
   const entityPresentationApi = useApi(entityPresentationApiRef);
 
   const { value: entities, loading } = useAsync(async () => {
-    const fields = [
-      'metadata.name',
-      'metadata.namespace',
-      'metadata.title',
-      'kind',
-    ];
-
-    if (!fields.includes(valuePath) && Boolean(valuePath)) {
-      fields.push(valuePath);
-    }
-
-    const { items } = await catalogApi.getEntities(
-      catalogFilter
-        ? { filter: catalogFilter, fields }
-        : { filter: undefined, fields },
-    );
+    const { items } = await catalogApi.getEntities({ filter: catalogFilter });
 
     const entityRefToPresentation = new Map<
       string,
@@ -102,80 +100,30 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
     return { catalogEntities: items, entityRefToPresentation };
   });
 
-  const allowArbitraryValues =
-    uiSchema['ui:options']?.allowArbitraryValues ?? true;
+  const onEntitySelect = useCallback(
+    (_: any, ref: Entity | null) => {
+      ref
+        ? setEntityValues(getValuesBySchema(ref, valuesSchema))
+        : setEntityValues({});
 
-  const getLabel = useCallback(
-    (freeSoloValue: string) => {
-      try {
-        // Will throw if defaultKind or defaultNamespace are not set
-        const parsedRef = parseEntityRef(freeSoloValue, {
-          defaultKind,
-          defaultNamespace,
-        });
+      // console.log(getValuesBySchema(ref, valuesSchema));
 
-        return getOptionValue(parsedRef);
-      } catch (err) {
-        return freeSoloValue;
-      }
+      // onChange(valueToSelect);
     },
-    [defaultKind, defaultNamespace],
+    [onEntityChange, valuesSchema],
   );
 
-  const onSelect = useCallback(
-    (_: any, ref: any | null, reason: AutocompleteChangeReason) => {
-      // ref can either be a string from free solo entry or
-
-      if (typeof ref !== 'string') {
-        // if ref does not exist: pass 'undefined' to trigger validation for required value
-        const valueToSelect = ref
-          ? getOptionValue(ref)
-          : undefined;
-
-        onChange(valueToSelect);
-      } else {
-        if (reason === 'blur' || reason === 'create-option') {
-          // Add in default namespace, etc.
-          let entityRef = ref;
-          try {
-            // Attempt to parse the entity ref into it's full form.
-            entityRef = stringifyEntityRef(
-              parseEntityRef(ref as string, {
-                defaultKind,
-                defaultNamespace,
-              }),
-            );
-          } catch (err) {
-            // If the passed in value isn't an entity ref, do nothing.
-          }
-          // We need to check against formData here as that's the previous value for this field.
-          if (formData !== ref || allowArbitraryValues) {
-            const valueToSelect = valuePath ? ref : entityRef;
-            onChange(valueToSelect);
-          }
-        }
-      }
-    },
-    [onChange, formData, defaultKind, defaultNamespace, allowArbitraryValues],
-  );
-
-  // Since free solo can be enabled, attempt to parse as a full entity ref first, then fall
-  // back to the given value.
-  const selectedEntity =
-    entities?.catalogEntities.find(e => getOptionValue(e) === formData) ?? 
-    (allowArbitraryValues && formData ? getLabel(formData) : '');
-      
   useEffect(() => {
-    if (entities?.catalogEntities.length === 1 && selectedEntity === '') {
+    if (entities?.catalogEntities.length === 1) {
       const firstEntity = entities.catalogEntities[0];
-      const valueToSelect = getOptionValue(firstEntity);
+      setEntityValues(getValuesBySchema(firstEntity, valuesSchema));
 
-      onChange(valueToSelect);
+      // onChange(fillValues(firstEntity, valuesSchema));
     }
-  }, [entities, onChange, selectedEntity]);
+  }, [entities, onEntityChange]);
 
-  function getOptionLabel(ref: Entity | CompoundEntityRef) {
-    if(ref) {
+  function getEntityOptionLabel(ref: Entity | CompoundEntityRef) {
+    if (ref) {
       const presentation = entities?.entityRefToPresentation.get(
         stringifyEntityRef(ref),
       );
@@ -186,50 +134,92 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
     return '';
   }
 
-  function getOptionValue(ref: Entity | CompoundEntityRef) {
-    return valuePath
-      ? getValueFromEntityRef(ref as Entity, valuePath)
-      : stringifyEntityRef(ref as Entity);
-  }
+  function renderAdditionalInputs(entityValues: JsonObject): React.ReactNode {
+    console.log(entityValues);
+
+
+    console.log('render');
+    let additionalInput: React.ReactNode;
+    for (const key in entityValues) {
+      
+      if (Array.isArray(entityValues[key])) {
+        additionalInput = <AdditionalPicker
+          key={key}
+          values={entityValues[key] as JsonArray}
+          label={key}
+          additionalInputs={additionalInputs}
+        />
+      } else if (entityValues[key] && typeof entityValues[key] === 'object') {
+        const optionLabel =
+          typeof entityValues[key].optionLabel === 'string' ? entityValues[key].optionLabel : undefined;
+
+        if (Array.isArray(entityValues[key].value)) {
+
+          additionalInput = <AdditionalPicker
+            key={key}
+            values={entityValues[key].value as JsonArray}
+            label={key}
+            optionLabel={optionLabel}
+            additionalInputs={additionalInputs}
+          />
+        } 
+        // else if(entityValues[key].value && typeof entityValues[key].value == 'object') {
+
+        //   renderAdditionalInputs(getValuesBySchema(entityValues[key].value, entityValues[key].properties))
+        // }
+
+      }
+      
+      setAdditionalInputs(prev => [...prev, additionalInput])
+    }
+
+    return <>{additionalInputs.map(input => input)}</>;
+  }    
 
   return (
-    <FormControl
-      margin="normal"
-      required={required}
-      error={rawErrors?.length > 0 && !formData}
-    >
-      <Autocomplete
-        disabled={entities?.catalogEntities.length === 1}
-        id={idSchema?.$id}
-        value={selectedEntity}
-        loading={loading}
-        onChange={onSelect}
-        options={entities?.catalogEntities || []}
-        getOptionLabel={option => {
-          // option can be a string due to freeSolo.
-          return typeof option === 'string' ? option : getOptionLabel(option);
-        }}
-        autoSelect
-        freeSolo={allowArbitraryValues}
-        renderInput={params => (
-          <TextField
-            {...params}
-            label={title}
-            margin="dense"
-            helperText={description}
-            FormHelperTextProps={{ margin: 'dense', style: { marginLeft: 0 } }}
-            variant="outlined"
-            required={required}
-            InputProps={params.InputProps}
-          />
-        )}
-        renderOption={option => <EntityDisplayName entityRef={option} labelVariant={labelVariant} />}
-        filterOptions={createFilterOptions<Entity>({
-          stringify: option => getOptionLabel(option),
-        })}
-        ListboxComponent={VirtualizedListbox}
-      />
-    </FormControl>
+    <>
+      <FormControl
+        margin="normal"
+        required={required}
+        error={rawErrors?.length > 0 && !formData}
+      >
+        <Autocomplete
+          disabled={entities?.catalogEntities.length === 1}
+          id={idSchema?.$id}
+          loading={loading}
+          onChange={onEntitySelect}
+          options={entities?.catalogEntities || []}
+          getOptionLabel={option => {
+            return getEntityOptionLabel(option);
+          }}
+          autoSelect
+          freeSolo={false}
+          renderInput={params => (
+            <TextField
+              {...params}
+              label={title}
+              margin="dense"
+              helperText={description}
+              FormHelperTextProps={{
+                margin: 'dense',
+                style: { marginLeft: 0 },
+              }}
+              variant="outlined"
+              required={required}
+              InputProps={params.InputProps}
+            />
+          )}
+          renderOption={option => (
+            <EntityDisplayName entityRef={option} labelVariant={labelVariant} />
+          )}
+          filterOptions={createFilterOptions<Entity>({
+            stringify: option => getEntityOptionLabel(option),
+          })}
+          ListboxComponent={VirtualizedListbox}
+        />
+      </FormControl>
+      {renderAdditionalInputs(entityValues)}
+    </>
   );
 };
 
@@ -299,14 +289,4 @@ function buildCatalogFilter(
   }
 
   return convertSchemaFiltersToQuery(catalogFilter);
-}
-
-function getValueByPath(entity: Entity, path: string): string {
-  return path
-    .split('.')
-    .reduce((acc: any, part: string) => acc && acc[part], entity);
-}
-
-function getValueFromEntityRef(entity: Entity, key: string) {
-  return getValueByPath(entity, key);
 }

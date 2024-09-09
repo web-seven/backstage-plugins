@@ -3,7 +3,6 @@ import {
   CATALOG_FILTER_EXISTS,
 } from '@backstage/catalog-client';
 import {
-  CompoundEntityRef,
   Entity,
   stringifyEntityRef,
 } from '@backstage/catalog-model';
@@ -99,7 +98,7 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
   const [inputValue, setInputValue] = useState<string>('');
 
   useEffect(() => {
-    if (entities && formData && Object.keys(formData as object).length) {
+    if (entities && formData && Object.keys(formData).length) {
       setInputValue(getOptionLabel(formData as Entity));
     }
   }, [formData, entities]);
