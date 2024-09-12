@@ -1,7 +1,9 @@
 import { scaffolderTemplatingExtensionPoint } from '@backstage/plugin-scaffolder-node/alpha';
-import { createBackendModule } from '@backstage/backend-plugin-api';
+import { coreServices, createBackendModule } from '@backstage/backend-plugin-api';
 import SealedSecret from './lib/SealedSecret';
 import { sealedSecretsServiceRef } from './service';
+
+const CONFIG_KEY = 'integration.sealedSecrets.publicKey'
 
 export const scaffolderModuleSealedSecrets = createBackendModule({
   pluginId: 'scaffolder',
@@ -11,9 +13,14 @@ export const scaffolderModuleSealedSecrets = createBackendModule({
       deps: {
         scaffolder: scaffolderTemplatingExtensionPoint,
         sealedSecrets: sealedSecretsServiceRef,
+        config: coreServices.rootConfig,
       },
-      async init({ scaffolder, sealedSecrets }) {
-        const publicKey = await sealedSecrets.getPublicKey()
+      async init({ scaffolder, sealedSecrets, config }) {
+
+        const publicKey = config.has(CONFIG_KEY)?
+          config.getString(CONFIG_KEY):
+          await sealedSecrets.getPublicKey()
+
         scaffolder.addTemplateFilters({
           sealSecret: (...args) => {
             const input = args.join("")
