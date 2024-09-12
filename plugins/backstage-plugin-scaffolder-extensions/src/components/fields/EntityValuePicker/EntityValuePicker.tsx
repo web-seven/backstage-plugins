@@ -50,8 +50,13 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
     formData,
     idSchema,
   } = props;
+  const [inputValue, setInputValue] = useState<string>('');
   const onEntityChange = props.onChange;
   const catalogFilter = buildCatalogFilter(uiSchema);
+  const [additionalInputs, setAdditionalInputs] = useState<React.ReactNode[]>(
+    [],
+  );
+  const aggregatedPropertiesRef = useRef<JsonObject>({});
 
   const valuesSchema: JsonObject =
     typeof uiSchema['ui:options']?.valuesSchema == 'object' &&
@@ -59,10 +64,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
       ? uiSchema['ui:options']?.valuesSchema
       : {};
 
-  const valueTemplate = valuesSchema?.template;
-  const [entityValues, setEntityValues] = useState<JsonObject>({});
-  const [additionalInputs, setAdditionalInputs] = useState<React.ReactNode[]>([]);
-  const aggregatedPropertiesRef = useRef<JsonObject>({});
+  const valueTemplate = uiSchema['ui:options']?.template as string;  
 
   let labelVariant = uiSchema['ui:options']?.labelVariant;
 
@@ -97,21 +99,43 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
     return { catalogEntities: items, entityRefToPresentation };
   });
 
-  const onEntitySelect = useCallback(
-    (_: any, ref: Entity | JsonObject | null) => {
-      ref
-        ? setEntityValues(getFilledSchema(ref, valuesSchema))
-        : setEntityValues({});
+  function setAggregatedProperties(keys: string[], value: JsonValue) {
+    let current: JsonObject = aggregatedPropertiesRef.current;
 
-      onEntityChange('valueToSelect');
+    for (let i = 0; i < keys.length - 1; i++) {
+      if (typeof current[keys[i]] !== 'object' || current[keys[i]] === null) {
+        current[keys[i]] = {};
+      }
+      current = current[keys[i]] as JsonObject;
+    }
+
+    if (typeof value === 'object' && value !== null) {
+      current[keys[keys.length - 1]] = { ...value };
+    } else {
+      current[keys[keys.length - 1]] = value;
+    }
+
+    onEntityChange(nunjucks.renderString(valueTemplate, aggregatedPropertiesRef.current));
+  }
+
+  const onEntitySelect = useCallback(
+    (_: any, ref: Entity | null) => {
+      if (ref) {
+        renderAdditionalInputs(getFilledSchema(ref, valuesSchema));
+        setInputValue(getEntityOptionLabel(ref));
+      } else {
+        renderAdditionalInputs({});
+        setInputValue('');
+      }
     },
-    [onEntityChange, valuesSchema],
+    [onEntityChange],
   );
 
   useEffect(() => {
     if (entities?.catalogEntities.length === 1) {
       const firstEntity = entities.catalogEntities[0];
-      setEntityValues(getFilledSchema(firstEntity, valuesSchema));
+      setInputValue(getEntityOptionLabel(firstEntity));
+      renderAdditionalInputs(getFilledSchema(firstEntity, valuesSchema));
     }
   }, [entities, onEntityChange]);
 
@@ -128,8 +152,6 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
   }
 
   function renderAdditionalInputs(entityValues: JsonObject) {
-    console.log(entityValues);
-    
     let additionalInputs: React.ReactNode[] = [];
     for (const key in entityValues) {
       aggregatedPropertiesRef.current = {
@@ -143,8 +165,8 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
             key={key}
             options={entityValues[key] as JsonArray}
             label={key}
-            aggregatedProperties={aggregatedPropertiesRef.current[key]}
-            qwerty={qwerty}
+            setAggregatedProperties={setAggregatedProperties}
+            keys={[key]}
           />,
         );
       } else if (entityValues[key] && typeof entityValues[key] === 'object') {
@@ -161,24 +183,16 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
               label={key}
               optionLabel={optionLabel}
               properties={entityValues[key].properties}
-              aggregatedProperties={aggregatedPropertiesRef.current[key]}
-              qwerty={qwerty}
+              setAggregatedProperties={setAggregatedProperties}
+              keys={[key]}
             />,
           );
         }
       }
     }
+
     setAdditionalInputs(additionalInputs);
   }
-
-  function qwerty() {
-    console.log(aggregatedPropertiesRef, );
-    
-  }
-
-  useEffect(() => {
-    renderAdditionalInputs(entityValues);
-  }, [entityValues]);
 
   return (
     <>
@@ -188,6 +202,8 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
         error={rawErrors?.length > 0 && !formData}
       >
         <Autocomplete
+          inputValue={inputValue}
+          onInputChange={(_, newValue) => setInputValue(newValue)}
           disabled={entities?.catalogEntities.length === 1}
           id={idSchema?.$id}
           loading={loading}

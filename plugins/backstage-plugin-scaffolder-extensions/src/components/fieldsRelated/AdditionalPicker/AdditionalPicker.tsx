@@ -1,6 +1,6 @@
 import { FormControl, TextField } from '@material-ui/core';
 import Autocomplete from '@material-ui/lab/Autocomplete';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { VirtualizedListbox } from '../VirtualizedListBox';
 import { JsonObject, JsonValue, JsonArray } from '@backstage/types';
 import { PropertyDisplayName } from '../PropertyDisplayName';
@@ -12,8 +12,8 @@ type AdditionalPickerProps = {
   label: string;
   optionLabel?: string;
   properties?: JsonValue;
-  aggregatedProperties?: JsonValue;
-  qwerty: () => void;
+  setAggregatedProperties: (keys: string[], value: JsonValue) => void;
+  keys: string[];
 };
 
 export const AdditionalPicker = ({
@@ -22,50 +22,17 @@ export const AdditionalPicker = ({
   label,
   optionLabel,
   properties,
-  aggregatedProperties,
-  qwerty,
+  setAggregatedProperties,
+  keys,
 }: AdditionalPickerProps): JSX.Element => {
   const [newInputs, setNewInputs] = useState<React.ReactNode[]>([]);
-  const [inputValue, setInputValue] = useState<string>('');
-  const [autocompleteValue, setAutocompleteValue] = useState<JsonValue | null>(null);
-
-  function fillAggregatedProperties(key: string, value: JsonValue) {
-    console.log('aggregatedProperties', aggregatedProperties);
-    console.log('key', key);
-    if (
-      aggregatedProperties &&
-      typeof aggregatedProperties === 'object' &&
-      aggregatedProperties.hasOwnProperty(key) &&
-      !Array.isArray(aggregatedProperties)
-    ) {
-      if (
-        aggregatedProperties[key] &&
-        typeof aggregatedProperties[key] === 'object' &&
-        !Array.isArray(aggregatedProperties[key]) &&
-        value &&
-        typeof value === 'object'
-      ) {
-        aggregatedProperties[key] = {
-          ...value,
-        };
-      } else {
-        aggregatedProperties[key] = value;
-      }
-    }
-    else {      
-      aggregatedProperties = value;
-    }
-  }
-
+  const [autocompleteValue, setAutocompleteValue] = useState<JsonValue | null>(
+    null,
+  );
 
   const onSelectEntityProperty = useCallback(
     (_: any, value: JsonValue | undefined) => {
-      setAutocompleteValue(value || null);
-      if (value) {
-        fillAggregatedProperties(label, value);
-      } else {
-        fillAggregatedProperties(label, {});
-      }
+
       if (
         value &&
         typeof value === 'object' &&
@@ -76,7 +43,7 @@ export const AdditionalPicker = ({
           value,
           properties as JsonObject,
         );
-        
+        setAggregatedProperties(keys, filledProperties);
 
         let inputs: React.ReactNode[] = [];
 
@@ -87,8 +54,8 @@ export const AdditionalPicker = ({
                 key={key}
                 options={filledProperties[key]}
                 label={key}
-                aggregatedProperties={aggregatedProperties[key]}
-                qwerty={qwerty}
+                setAggregatedProperties={setAggregatedProperties}
+                keys={[...keys, key]}
               />,
             );
           } else if (
@@ -104,18 +71,24 @@ export const AdditionalPicker = ({
                 options={filledProperties[key].value}
                 properties={filledProperties[key].properties}
                 optionLabel={filledProperties[key].optionLabel as string}
-                aggregatedProperties={aggregatedProperties[key]}
-                qwerty={qwerty}
+                setAggregatedProperties={setAggregatedProperties}
+                keys={[...keys, key]}
               />,
             );
           }
         }
-
         setNewInputs(inputs);
       } else {
         setNewInputs([]);
+        if(value) setAggregatedProperties(keys, value);
       }
-    // qwerty();
+
+      if (value) {
+        setAutocompleteValue(value);
+      } else {
+        setAutocompleteValue(null);
+        setNewInputs([]);
+      }
     },
     [properties],
   );
@@ -139,14 +112,11 @@ export const AdditionalPicker = ({
 
   useEffect(() => {
     if (options.length === 1) {
-      const optionLabel = getPropertyOptionLabel(options[0]);
       setAutocompleteValue(options[0]);
-      setInputValue(optionLabel);
       onSelectEntityProperty(null, options[0]);
     } else {
       setAutocompleteValue(null);
-      setInputValue('');
-      onSelectEntityProperty(null, undefined);
+      setNewInputs([]);
     }
   }, [options]);
 
@@ -155,13 +125,11 @@ export const AdditionalPicker = ({
       <FormControl margin="normal" required={required}>
         <Autocomplete
           value={autocompleteValue}
-          inputValue={inputValue}
-          onInputChange={(_, newValue) => setInputValue(newValue)}
           disabled={options.length === 1}
           onChange={onSelectEntityProperty}
           options={options || []}
           getOptionLabel={option => getPropertyOptionLabel(option)}
-          getOptionSelected={(option, value) => 
+          getOptionSelected={(option, value) =>
             JSON.stringify(option) === JSON.stringify(value)
           }
           autoSelect
@@ -182,7 +150,6 @@ export const AdditionalPicker = ({
           ListboxComponent={VirtualizedListbox}
         />
       </FormControl>
-
       {newInputs}
     </>
   );
