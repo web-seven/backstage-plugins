@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { Box, makeStyles, Theme } from '@material-ui/core';
+import React from 'react';
+import { Box, makeStyles } from '@material-ui/core';
 
 type PropertyDisplayNameProps = {
   optionLabel: string

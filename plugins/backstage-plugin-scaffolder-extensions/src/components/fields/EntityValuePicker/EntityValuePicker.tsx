@@ -18,7 +18,7 @@ import FormControl from '@material-ui/core/FormControl';
 import Autocomplete, {
   createFilterOptions,
 } from '@material-ui/lab/Autocomplete';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import useAsync from 'react-use/esm/useAsync';
 import {
   EntityValuePickerFilterQueryValue,
@@ -32,7 +32,7 @@ import { JsonObject, JsonValue, JsonArray } from '@backstage/types';
 export { EntityValuePickerSchema } from './schema';
 
 import nunjucks from 'nunjucks';
-import { getValuesBySchema } from '../../fieldsRelated/utils';
+import { getFilledSchema } from '../../fieldsRelated/utils';
 import { AdditionalPicker } from '../../fieldsRelated/AdditionalPicker';
 
 /**
@@ -52,9 +52,6 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
   } = props;
   const onEntityChange = props.onChange;
   const catalogFilter = buildCatalogFilter(uiSchema);
-  const defaultKind = uiSchema['ui:options']?.defaultKind;
-  const defaultNamespace =
-    uiSchema['ui:options']?.defaultNamespace || undefined;
 
   const valuesSchema: JsonObject =
     typeof uiSchema['ui:options']?.valuesSchema == 'object' &&
@@ -63,9 +60,9 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
       : {};
 
   const valueTemplate = valuesSchema?.template;
-  const [values, setValues] = useState<JsonObject>({});
   const [entityValues, setEntityValues] = useState<JsonObject>({});
-  const [additionalInputs, setAdditionalInputs] = useState<React.ReactNode[]>([])
+  const [additionalInputs, setAdditionalInputs] = useState<React.ReactNode[]>([]);
+  const aggregatedPropertiesRef = useRef<JsonObject>({});
 
   let labelVariant = uiSchema['ui:options']?.labelVariant;
 
@@ -101,14 +98,12 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
   });
 
   const onEntitySelect = useCallback(
-    (_: any, ref: Entity | null) => {
+    (_: any, ref: Entity | JsonObject | null) => {
       ref
-        ? setEntityValues(getValuesBySchema(ref, valuesSchema))
+        ? setEntityValues(getFilledSchema(ref, valuesSchema))
         : setEntityValues({});
 
-      // console.log(getValuesBySchema(ref, valuesSchema));
-
-      // onChange(valueToSelect);
+      onEntityChange('valueToSelect');
     },
     [onEntityChange, valuesSchema],
   );
@@ -116,9 +111,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
   useEffect(() => {
     if (entities?.catalogEntities.length === 1) {
       const firstEntity = entities.catalogEntities[0];
-      setEntityValues(getValuesBySchema(firstEntity, valuesSchema));
-
-      // onChange(fillValues(firstEntity, valuesSchema));
+      setEntityValues(getFilledSchema(firstEntity, valuesSchema));
     }
   }, [entities, onEntityChange]);
 
@@ -134,47 +127,58 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
     return '';
   }
 
-  function renderAdditionalInputs(entityValues: JsonObject): React.ReactNode {
+  function renderAdditionalInputs(entityValues: JsonObject) {
     console.log(entityValues);
-
-
-    console.log('render');
-    let additionalInput: React.ReactNode;
+    
+    let additionalInputs: React.ReactNode[] = [];
     for (const key in entityValues) {
-      
+      aggregatedPropertiesRef.current = {
+        ...aggregatedPropertiesRef.current,
+        [key]: entityValues[key],
+      };
+
       if (Array.isArray(entityValues[key])) {
-        additionalInput = <AdditionalPicker
-          key={key}
-          values={entityValues[key] as JsonArray}
-          label={key}
-          additionalInputs={additionalInputs}
-        />
+        additionalInputs.push(
+          <AdditionalPicker
+            key={key}
+            options={entityValues[key] as JsonArray}
+            label={key}
+            aggregatedProperties={aggregatedPropertiesRef.current[key]}
+            qwerty={qwerty}
+          />,
+        );
       } else if (entityValues[key] && typeof entityValues[key] === 'object') {
         const optionLabel =
-          typeof entityValues[key].optionLabel === 'string' ? entityValues[key].optionLabel : undefined;
+          typeof entityValues[key].optionLabel === 'string'
+            ? entityValues[key].optionLabel
+            : undefined;
 
         if (Array.isArray(entityValues[key].value)) {
-
-          additionalInput = <AdditionalPicker
-            key={key}
-            values={entityValues[key].value as JsonArray}
-            label={key}
-            optionLabel={optionLabel}
-            additionalInputs={additionalInputs}
-          />
-        } 
-        // else if(entityValues[key].value && typeof entityValues[key].value == 'object') {
-
-        //   renderAdditionalInputs(getValuesBySchema(entityValues[key].value, entityValues[key].properties))
-        // }
-
+          additionalInputs.push(
+            <AdditionalPicker
+              key={key}
+              options={entityValues[key].value as JsonArray}
+              label={key}
+              optionLabel={optionLabel}
+              properties={entityValues[key].properties}
+              aggregatedProperties={aggregatedPropertiesRef.current[key]}
+              qwerty={qwerty}
+            />,
+          );
+        }
       }
-      
-      setAdditionalInputs(prev => [...prev, additionalInput])
     }
+    setAdditionalInputs(additionalInputs);
+  }
 
-    return <>{additionalInputs.map(input => input)}</>;
-  }    
+  function qwerty() {
+    console.log(aggregatedPropertiesRef, );
+    
+  }
+
+  useEffect(() => {
+    renderAdditionalInputs(entityValues);
+  }, [entityValues]);
 
   return (
     <>
@@ -189,9 +193,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
           loading={loading}
           onChange={onEntitySelect}
           options={entities?.catalogEntities || []}
-          getOptionLabel={option => {
-            return getEntityOptionLabel(option);
-          }}
+          getOptionLabel={option => getEntityOptionLabel(option)}
           autoSelect
           freeSolo={false}
           renderInput={params => (
@@ -218,7 +220,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
           ListboxComponent={VirtualizedListbox}
         />
       </FormControl>
-      {renderAdditionalInputs(entityValues)}
+      {additionalInputs}
     </>
   );
 };

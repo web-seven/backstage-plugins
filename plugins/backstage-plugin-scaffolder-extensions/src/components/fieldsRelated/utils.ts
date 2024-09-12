@@ -59,11 +59,11 @@ export function replaceEntityObjectWithLink(
   return newFormData;
 }
 
-export function getValuesBySchema(obj: JsonObject, valuesSchema: JsonObject) {
+export function getFilledSchema(obj: JsonObject, valuesSchema: JsonObject) {
   const filledSchema = { ...valuesSchema };
 
   for (const key in filledSchema) {
-    if(key !== 'schema') {
+    if(key !== 'properties') {
       if (typeof filledSchema[key] == 'string') {
         if(getValueByPath(obj, filledSchema[key])) {
           filledSchema[key] = getValueByPath(obj, filledSchema[key]);
@@ -73,7 +73,7 @@ export function getValuesBySchema(obj: JsonObject, valuesSchema: JsonObject) {
         typeof filledSchema[key] == 'object' &&
         !Array.isArray(filledSchema[key])
       ) {
-        filledSchema[key] = getValuesBySchema(obj, filledSchema[key]);
+        filledSchema[key] = getFilledSchema(obj, filledSchema[key]);
       }
     }
   }
