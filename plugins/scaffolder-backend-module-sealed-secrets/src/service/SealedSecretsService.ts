@@ -11,17 +11,21 @@ export class SealedSecretsServiceImpl implements SealedSecretsService {
   private readonly path = "/v1/cert.pem"
 
   async getPublicKey(): Promise<string | undefined> {
-    let kc = new KubeConfig();
-    kc.loadFromDefault();
-    let k8sCoreApi = kc.makeApiClient(CoreV1Api)
-    let data: { response: http.IncomingMessage, body: string } = 
-      await k8sCoreApi.connectGetNamespacedServiceProxyWithPath(
-        this.service, this.namespace, this.path
-      )
-    if (data.response.statusCode == 200) {
-      let pem = data.body
-      const cert = pki.certificateFromPem(pem)
-      return pki.publicKeyToPem(cert.publicKey);
+    try {
+      let kc = new KubeConfig();
+      kc.loadFromDefault();
+      let k8sCoreApi = kc.makeApiClient(CoreV1Api)
+      let data: { response: http.IncomingMessage, body: string } = 
+        await k8sCoreApi.connectGetNamespacedServiceProxyWithPath(
+          this.service, this.namespace, this.path
+        )
+      if (data.response.statusCode == 200) {
+        let pem = data.body
+        const cert = pki.certificateFromPem(pem)
+        return pki.publicKeyToPem(cert.publicKey);
+      }
+    } catch(e) {
+      console.log(e)
     }
     return undefined
   }
