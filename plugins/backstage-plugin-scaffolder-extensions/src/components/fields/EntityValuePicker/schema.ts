@@ -48,7 +48,7 @@ export const EntityValuePickerFieldSchema = makeFieldSchemaFromZod(
       .optional()
       .describe('List of key-value filter expression for entities'),
     valuePath: z
-      .string()
+      .record(z.any())
       .optional()
       .describe('Value of component used as value of picker'),
     labelVariant: z
