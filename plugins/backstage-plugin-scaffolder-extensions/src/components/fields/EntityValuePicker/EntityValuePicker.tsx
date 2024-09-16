@@ -32,7 +32,7 @@ import { JsonObject, JsonValue, JsonArray } from '@backstage/types';
 export { EntityValuePickerSchema } from './schema';
 
 import nunjucks from 'nunjucks';
-import { getFilledSchema } from '../../fieldsRelated/utils';
+import { getFilledSchema, getValueByPath } from '../../fieldsRelated/utils';
 import { AdditionalPicker } from '../../fieldsRelated/AdditionalPicker';
 
 /**
@@ -58,13 +58,15 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
   );
   const aggregatedPropertiesRef = useRef<JsonObject>({});
 
+  const valuePath: string | undefined = uiSchema['ui:options']?.valuePath;
+
   const valuesSchema: JsonObject =
     typeof uiSchema['ui:options']?.valuesSchema == 'object' &&
     uiSchema['ui:options']?.valuesSchema
       ? uiSchema['ui:options']?.valuesSchema
       : {};
 
-  const valueTemplate = uiSchema['ui:options']?.template as string;  
+  const valueTemplate = uiSchema['ui:options']?.template as string;
 
   let labelVariant = uiSchema['ui:options']?.labelVariant;
 
@@ -115,19 +117,35 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
       current[keys[keys.length - 1]] = value;
     }
 
-    onEntityChange(nunjucks.renderString(valueTemplate, aggregatedPropertiesRef.current));
+    onEntityChange(
+      nunjucks.renderString(valueTemplate, aggregatedPropertiesRef.current),
+    );
   }
 
   const onEntitySelect = useCallback(
     (_: any, ref: Entity | null) => {
       if (ref) {
-        renderAdditionalInputs(getFilledSchema(ref, valuesSchema));
+        if (valuePath) {
+          const valueByPath =
+            typeof getValueByPath(ref, valuePath) === 'string'
+              ? getValueByPath(ref, valuePath)
+              : JSON.stringify(getValueByPath(ref, valuePath));
+
+          onEntityChange(valueByPath);
+        } else {
+          renderAdditionalInputs(getFilledSchema(ref, valuesSchema));
+          onEntityChange(
+            nunjucks.renderString(
+              valueTemplate,
+              aggregatedPropertiesRef.current,
+            ),
+          );
+        }
         setInputValue(getEntityOptionLabel(ref));
       } else {
         renderAdditionalInputs({});
         setInputValue('');
       }
-      onEntityChange(nunjucks.renderString(valueTemplate, aggregatedPropertiesRef.current));
     },
     [onEntityChange],
   );
@@ -136,7 +154,19 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
     if (entities?.catalogEntities.length === 1) {
       const firstEntity = entities.catalogEntities[0];
       setInputValue(getEntityOptionLabel(firstEntity));
-      renderAdditionalInputs(getFilledSchema(firstEntity, valuesSchema));
+      if (valuePath) {
+        const valueByPath =
+          typeof getValueByPath(firstEntity, valuePath) === 'string'
+            ? getValueByPath(firstEntity, valuePath)
+            : JSON.stringify(getValueByPath(firstEntity, valuePath));
+
+        onEntityChange(valueByPath);
+      } else {
+        renderAdditionalInputs(getFilledSchema(firstEntity, valuesSchema));
+        onEntityChange(
+          nunjucks.renderString(valueTemplate, aggregatedPropertiesRef.current),
+        );
+      }
     }
   }, [entities, onEntityChange]);
 
@@ -154,15 +184,15 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
 
   function renderAdditionalInputs(entityValues: JsonObject) {
     let additionalInputs: React.ReactNode[] = [];
-  
+
     for (const key in entityValues) {
       aggregatedPropertiesRef.current = {
         ...aggregatedPropertiesRef.current,
         [key]: entityValues[key],
       };
-  
+
       const currentValue = entityValues[key];
-  
+
       if (Array.isArray(currentValue)) {
         additionalInputs.push(
           <AdditionalPicker
@@ -173,13 +203,12 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
             keys={[key]}
           />,
         );
-      } 
+      } else if (currentValue && typeof currentValue === 'object') {
+        const optionLabel =
+          typeof (currentValue as any)?.optionLabel === 'string'
+            ? (currentValue as any)?.optionLabel
+            : undefined;
 
-      else if (currentValue && typeof currentValue === 'object') {
-        const optionLabel = typeof (currentValue as any)?.optionLabel === 'string'
-          ? (currentValue as any)?.optionLabel
-          : undefined;
-  
         if (Array.isArray((currentValue as any)?.value)) {
           additionalInputs.push(
             <AdditionalPicker
@@ -195,9 +224,9 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
         }
       }
     }
-  
+
     setAdditionalInputs(additionalInputs);
-  }  
+  }
 
   return (
     <>
