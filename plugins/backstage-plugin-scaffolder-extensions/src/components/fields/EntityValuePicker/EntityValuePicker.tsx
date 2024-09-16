@@ -50,7 +50,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
     formData,
     idSchema,
   } = props;
-  const [inputValue, setInputValue] = useState<string>('');
+  const [autocompleteValue, setAutocompleteValue] = useState<Entity | null>(null);
   const onEntityChange = props.onChange;
   const catalogFilter = buildCatalogFilter(uiSchema);
   const [additionalInputs, setAdditionalInputs] = useState<React.ReactNode[]>(
@@ -125,6 +125,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
   const onEntitySelect = useCallback(
     (_: any, ref: Entity | null) => {
       if (ref) {
+        setAutocompleteValue(ref);
         if (valuePath) {
           const valueByPath =
             typeof getValueByPath(ref, valuePath) === 'string'
@@ -141,10 +142,9 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
             ),
           );
         }
-        setInputValue(getEntityOptionLabel(ref));
       } else {
         renderAdditionalInputs({});
-        setInputValue('');
+        setAutocompleteValue(null);
       }
     },
     [onEntityChange],
@@ -153,7 +153,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
   useEffect(() => {
     if (entities?.catalogEntities.length === 1) {
       const firstEntity = entities.catalogEntities[0];
-      setInputValue(getEntityOptionLabel(firstEntity));
+      setAutocompleteValue(firstEntity);
       if (valuePath) {
         const valueByPath =
           typeof getValueByPath(firstEntity, valuePath) === 'string'
@@ -168,7 +168,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
         );
       }
     }
-  }, [entities, onEntityChange]);
+  }, [entities]);
 
   function getEntityOptionLabel(ref: Entity | CompoundEntityRef) {
     if (ref) {
@@ -236,8 +236,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
         error={rawErrors?.length > 0 && !formData}
       >
         <Autocomplete
-          inputValue={inputValue}
-          onInputChange={(_, newValue) => setInputValue(newValue)}
+          value={autocompleteValue}
           disabled={entities?.catalogEntities.length === 1}
           id={idSchema?.$id}
           loading={loading}
