@@ -82,11 +82,10 @@ export const AdditionalPicker = ({
         setNewInputs([]);
         if (value) setAggregatedProperties(keys, value);
       }
+
+      setAutocompleteValue(value || null);
   
-      if (value) {
-        setAutocompleteValue(value);
-      } else {
-        setAutocompleteValue(null);
+      if (!value) {
         setNewInputs([]);
       }
     },
