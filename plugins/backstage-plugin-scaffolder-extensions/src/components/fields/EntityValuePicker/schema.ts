@@ -48,9 +48,17 @@ export const EntityValuePickerFieldSchema = makeFieldSchemaFromZod(
       .optional()
       .describe('List of key-value filter expression for entities'),
     valuePath: z
+      .string()
+      .optional()
+      .describe('Path to property of entity used as value of picker'),
+    valuesSchema: z
       .record(z.any())
       .optional()
-      .describe('Value of component used as value of picker'),
+      .describe('Scheme that describes which entity properties we must use to create object used by template option.'),
+    template: z
+      .string()
+      .optional()
+      .describe('Nunjucks template that uses selected values from entity and set the final value of the EntityValuePicker'),
     labelVariant: z
       .string()
       .optional()
