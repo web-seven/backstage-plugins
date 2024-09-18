@@ -32,7 +32,7 @@ import { JsonObject, JsonValue, JsonArray } from '@backstage/types';
 export { EntityValuePickerSchema } from './schema';
 
 import nunjucks from 'nunjucks';
-import { getFilledSchema, getValueByPath } from '../../fieldsRelated/utils';
+import { getFilledSchema, getValueByPath } from '../../../utils';
 import { AdditionalPicker } from '../../fieldsRelated/AdditionalPicker';
 
 /**

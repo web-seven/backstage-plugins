@@ -6,7 +6,7 @@ import {
 import { ReviewStepProps } from '@backstage/plugin-scaffolder-react';
 import { Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { mergeSchemas, replaceEntityObjectWithLink } from '../utils';
+import { mergeSchemas, replaceEntityObjectWithLink } from '../../../utils';
 /**
  * Custom review step component
  *

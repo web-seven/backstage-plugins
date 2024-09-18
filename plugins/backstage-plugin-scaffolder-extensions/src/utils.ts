@@ -11,10 +11,7 @@ export function mergeSchemas(steps: ParsedTemplateSchema[]): JsonObject {
       typeof step.mergedSchema.properties === 'object' &&
       step.mergedSchema.properties !== null
     ) {
-      Object.assign(
-        schema.properties,
-        step.mergedSchema.properties,
-      );
+      Object.assign(schema.properties, step.mergedSchema.properties);
     }
   });
 
@@ -30,27 +27,27 @@ export function replaceEntityObjectWithLink(
   for (const key in newFormData) {
     const value = newFormData[key];
 
-    if (
-      typeof schema.properties === 'object' &&
-      schema.properties !== null
-    ) {
-      const fieldSchema: JsonValue | undefined = (schema.properties as JsonObject)[key];
+    if (typeof schema.properties === 'object' && schema.properties !== null) {
+      const fieldSchema: JsonValue | undefined = (
+        schema.properties as JsonObject
+      )[key];
 
-      if (typeof fieldSchema === 'object' && !Array.isArray(fieldSchema) && fieldSchema !== null) {
-        if (
-          fieldSchema['ui:field'] === 'EntityObjectPicker'
-        ) {
-          newFormData[key] = React.createElement(EntityRefLink, { entityRef: value });
-          fieldSchema['ui:backstage'] = {review: {explode: false}};          
+      if (
+        typeof fieldSchema === 'object' &&
+        !Array.isArray(fieldSchema) &&
+        fieldSchema !== null
+      ) {
+        if (fieldSchema['ui:field'] === 'EntityObjectPicker') {
+          newFormData[key] = React.createElement(EntityRefLink, {
+            entityRef: value,
+          });
+          fieldSchema['ui:backstage'] = { review: { explode: false } };
         } else if (
           typeof value === 'object' &&
           value !== null &&
           fieldSchema?.type === 'object'
         ) {
-          newFormData[key] = replaceEntityObjectWithLink(
-            value,
-            fieldSchema,
-          );
+          newFormData[key] = replaceEntityObjectWithLink(value, fieldSchema);
         }
       }
     }
