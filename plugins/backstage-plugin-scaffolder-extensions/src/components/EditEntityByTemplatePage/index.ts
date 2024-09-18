@@ -1,0 +1,1 @@
+export { EditEntityByTemplatePage } from './EditEntityByTemplatePage'

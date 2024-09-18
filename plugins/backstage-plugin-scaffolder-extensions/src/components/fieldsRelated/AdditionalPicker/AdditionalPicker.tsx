@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { VirtualizedListbox } from '../VirtualizedListBox';
 import { JsonObject, JsonValue, JsonArray } from '@backstage/types';
 import { PropertyDisplayName } from '../PropertyDisplayName';
-import { getFilledSchema } from '../utils';
+import { getFilledSchema } from '../../../utils';
 
 type AdditionalPickerProps = {
   required?: boolean;

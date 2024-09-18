@@ -11,7 +11,7 @@ import {
   catalogImportPlugin,
 } from '@backstage/plugin-catalog-import';
 import { ScaffolderPage, scaffolderPlugin } from '@backstage/plugin-scaffolder';
-import { ScaffolderFieldExtensions } from '@backstage/plugin-scaffolder-react'
+import { ScaffolderFieldExtensions } from '@backstage/plugin-scaffolder-react';
 import { orgPlugin } from '@backstage/plugin-org';
 import { SearchPage } from '@backstage/plugin-search';
 import {
@@ -37,11 +37,12 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
-import { 
-  EntityObjectPickerFieldExtension, 
-  EntityValuePickerFieldExtension, 
-  ReviewStepComponent 
+import {
+  EntityObjectPickerFieldExtension,
+  EntityValuePickerFieldExtension,
+  ReviewStepComponent
 } from '@web-seven/backstage-plugin-scaffolder-extensions';
+import { EditEntityByTemplatePage } from '@web-seven/backstage-plugin-scaffolder-extensions/src/components/EditEntityByTemplatePage';
 
 const app = createApp({
   apis,
@@ -67,6 +68,7 @@ const app = createApp({
   },
 });
 
+
 const routes = (
   <FlatRoutes>
     <Route path="/" element={<Navigate to="catalog" />} />
@@ -86,7 +88,10 @@ const routes = (
         <ReportIssue />
       </TechDocsAddons>
     </Route>
-    <Route path="/create" element={<ScaffolderPage components={{ReviewStepComponent}} />}>
+    <Route
+      path="/create"
+      element={<ScaffolderPage components={{ ReviewStepComponent, EXPERIMENTAL_TemplateWizardPageComponent: EditEntityByTemplatePage }} />}
+    >
       <ScaffolderFieldExtensions>
         <EntityObjectPickerFieldExtension />
         <EntityValuePickerFieldExtension />
