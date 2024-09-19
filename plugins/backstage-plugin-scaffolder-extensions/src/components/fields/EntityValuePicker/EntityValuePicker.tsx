@@ -50,7 +50,9 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
     formData,
     idSchema,
   } = props;
-  const [autocompleteValue, setAutocompleteValue] = useState<Entity | null>(null);
+  const [autocompleteValue, setAutocompleteValue] = useState<Entity | null>(
+    null,
+  );
   const onEntityChange = props.onChange;
   const catalogFilter = buildCatalogFilter(uiSchema);
   const [additionalInputs, setAdditionalInputs] = useState<React.ReactNode[]>(
@@ -151,22 +153,25 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
   );
 
   useEffect(() => {
-    if (entities?.catalogEntities.length === 1) {
-      const firstEntity = entities.catalogEntities[0];
-      setAutocompleteValue(firstEntity);
-      if (valuePath) {
-        const valueByPath =
-          typeof getValueByPath(firstEntity, valuePath) === 'string'
-            ? getValueByPath(firstEntity, valuePath)
-            : JSON.stringify(getValueByPath(firstEntity, valuePath));
+    const initialEntity =
+      entities?.catalogEntities.length === 1
+        ? entities.catalogEntities[0]
+        : entities?.catalogEntities.find(e => e.metadata.name === formData);
 
-        onEntityChange(valueByPath);
-      } else {
-        renderAdditionalInputs(getFilledSchema(firstEntity, valuesSchema));
-        onEntityChange(
-          nunjucks.renderString(valueTemplate, aggregatedPropertiesRef.current),
-        );
-      }
+    setAutocompleteValue(initialEntity ? initialEntity : null);
+
+    if (valuePath && initialEntity) {
+      const valueByPath =
+        typeof getValueByPath(initialEntity, valuePath) === 'string'
+          ? getValueByPath(initialEntity, valuePath)
+          : JSON.stringify(getValueByPath(initialEntity, valuePath));
+
+      onEntityChange(valueByPath);
+    } else if (!valuePath && initialEntity) {
+      renderAdditionalInputs(getFilledSchema(initialEntity, valuesSchema));
+      onEntityChange(
+        nunjucks.renderString(valueTemplate, aggregatedPropertiesRef.current),
+      );
     }
   }, [entities]);
 
