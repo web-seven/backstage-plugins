@@ -1,6 +1,6 @@
 # EntityObjectPicker Field Extension Plugin
 
-This plugin for Backstage provides a `ScaffolderFieldExtensions` that enhances the functionality of the `EntityPicker` field. The plugin allows you to select and use as value the entire object of the selected entity or select which field of Entity will be used as value. Also this plugin provide custom ReviewStepComponent to show in preview link to selected entity.
+This plugin for Backstage provides a `ScaffolderFieldExtensions` that enhances the functionality of the `EntityPicker` field. The plugin allows you to select and use the entire object of the selected entity as a value or choose which specific field of the entity will be used as a value. Additionally, the plugin provides a custom `ReviewStepComponent` to display a preview link to the selected entity.
 
 ## Configuration
 
@@ -12,7 +12,50 @@ Configuration is done through the field's settings in the template. The followin
   - `secondaryTitle`: The secondary title of the entity.
   - `entityRef`: The entity reference.
 
-- `ui:options.valuePath`: Specifies which field of selected entity will be used as value.
+- `ui:options.valuesSchema`: A schema that describes which entity properties should be used to create the object used by the template.
+
+Example of a `valuesSchema`: 
+
+```yaml
+valuesSchema:
+  name: metadata.name
+  tag: spec.tags
+  version: spec.version
+  user:  
+    value: spec.users
+    optionLabel: name
+    properties: 
+      user_name: name
+      user_id: id
+      address: 
+        value: address
+        optionLabel: street
+        properties: 
+          street: street
+      jobs:
+        value: jobs
+        optionLabel: title
+        properties: 
+          id: id
+          address: address
+
+```
+If the selected value from the template is an array, an additional picker will be rendered to select the final value from the array. If the value is an array of objects, `optionLable` is used to specify which property of the selected object will be the label for the rendered picker options. Additionally, you can choose which properties of the object will be selected with `properties`. `value` is the path to this array of objects.
+
+
+- `ui:options.template`: Nunjucks template that uses selected values from entity and set the final value of the EntityValuePicker
+Example of template: 
+
+```YAML
+template: "Entity Name: {{ name }} \n
+  Tag: {{ tag }} \n
+  Version: {{ version }} \n
+  User name: {{ user.user_name }} \n
+  User id: {{ user.user_id }} \n
+  User address street: {{ user.address.street }} \n
+  Job id: {{ user.jobs.id }} \n
+  Job address: {{ user.jobs.address }} \n"
+```
 
 ### EntityObjectPicker
 
