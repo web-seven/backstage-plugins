@@ -40,9 +40,9 @@ import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/
 import {
   EntityObjectPickerFieldExtension,
   EntityValuePickerFieldExtension,
-  ReviewStepComponent
+  ReviewStepComponent,
+  EditEntityByTemplatePageWrapper
 } from '@web-seven/backstage-plugin-scaffolder-extensions';
-import { EditEntityByTemplatePage } from '@web-seven/backstage-plugin-scaffolder-extensions/src/components/EditEntityByTemplatePage';
 
 const app = createApp({
   apis,
@@ -90,7 +90,15 @@ const routes = (
     </Route>
     <Route
       path="/create"
-      element={<ScaffolderPage components={{ ReviewStepComponent, EXPERIMENTAL_TemplateWizardPageComponent: EditEntityByTemplatePage }} />}
+      element={
+        <ScaffolderPage
+          components={{
+            ReviewStepComponent,
+            EXPERIMENTAL_TemplateWizardPageComponent:
+              EditEntityByTemplatePageWrapper,
+          }}
+        />
+      }
     >
       <ScaffolderFieldExtensions>
         <EntityObjectPickerFieldExtension />

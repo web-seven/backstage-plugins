@@ -23,6 +23,7 @@ import { scaffolderPlugin } from '@backstage/plugin-scaffolder';
 import { scaffolderExtensionsTranslationRef } from '../../translation';
 import { useTranslationRef } from '@backstage/core-plugin-api/alpha';
 import qs from 'qs';
+import { useTemplateFormState } from '../../FormStateContext';
 
 export type EditEntityByTemplatePageProps = {
   customFieldExtensions: FieldExtensionOptions<any, any>[];
@@ -44,11 +45,12 @@ export const EditEntityByTemplatePage = (
   const rootRef = useRouteRef(scaffolderPlugin.routes.root);
   const taskRoute = useRouteRef(scaffolderPlugin.routes.ongoingTask);
   const { secrets } = useTemplateSecrets();
+  const { formState, setFormState } = useTemplateFormState();
   const scaffolderApi = useApi(scaffolderApiRef);
   const catalogApi = useApi(catalogApiRef);
   const navigate = useNavigate();
 
-  const FORMDATA_ANNOTATION_PATH = 'backstage.io/form-data';
+  const FORMDATA_ANNOTATION_PATH = 'backstage.io/edit-data';
 
   const [initialState, setInitialState] = useState<Record<string, JsonValue>>(
     {},
@@ -74,7 +76,7 @@ export const EditEntityByTemplatePage = (
           const entity = await catalogApi.getEntityByRef(entityRef);
           const encodedInitialState =
             entity?.metadata?.annotations?.[FORMDATA_ANNOTATION_PATH] || '';
-          
+
           if (encodedInitialState) {
             setInitialState(JSON.parse(atob(encodedInitialState)));
           }
@@ -95,13 +97,14 @@ export const EditEntityByTemplatePage = (
     name: templateName,
   });
 
-  const onCreate = async (values: Record<string, JsonValue>) => {
+  const onCreate = async (values: Record<string, JsonValue>) => {    
+    values = {...values, _editData: btoa(JSON.stringify({...values, formState }))};
+
     const { taskId } = await scaffolderApi.scaffold({
       templateRef,
       values,
       secrets,
     });
-
     navigate(taskRoute({ taskId }));
   };
 

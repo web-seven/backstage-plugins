@@ -29,6 +29,10 @@ const useStyles = makeStyles(theme => ({
 export const ReviewStepComponent = (props: ReviewStepProps): JSX.Element => {
   const styles = useStyles();
   const { formData, handleBack, steps, handleCreate } = props;
+  
+  if(formData.formState) {
+    delete formData.formState;
+  }
 
   return (
     <>

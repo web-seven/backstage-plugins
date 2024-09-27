@@ -12,8 +12,10 @@ type AdditionalPickerProps = {
   label: string;
   optionLabel?: string;
   properties?: JsonValue;
-  setAggregatedProperties: (keys: string[], value: JsonValue) => void;
+  setInputStateValue: (keys: string[], value: JsonValue | undefined) => void;
+  setAggregatedPropertiesValue: (keys: string[], value: JsonValue | undefined) => void;
   keys: string[];
+  initialValue: JsonValue;
 };
 
 export const AdditionalPicker = ({
@@ -22,8 +24,10 @@ export const AdditionalPicker = ({
   label,
   optionLabel,
   properties,
-  setAggregatedProperties,
+  setInputStateValue,
+  setAggregatedPropertiesValue,
   keys,
+  initialValue,
 }: AdditionalPickerProps): JSX.Element => {
   const [newInputs, setNewInputs] = useState<React.ReactNode[]>([]);
   const [autocompleteValue, setAutocompleteValue] = useState<JsonValue | null>(
@@ -31,7 +35,10 @@ export const AdditionalPicker = ({
   );
 
   const onSelectEntityProperty = useCallback(
-    (_: any, value: JsonValue | undefined) => {
+    (_: any, value: JsonValue | undefined, newInitialValue: JsonValue = null) => {
+      setAutocompleteValue(value || null);
+      setNewInputs([]);
+      newInitialValue ? newInitialValue : initialValue;
       if (
         value &&
         typeof value === 'object' &&
@@ -42,20 +49,29 @@ export const AdditionalPicker = ({
           value,
           properties as JsonObject,
         );
-        setAggregatedProperties(keys, filledProperties);
+
+        setInputStateValue(keys, {$_value: value});
+        setAggregatedPropertiesValue(keys, filledProperties);
   
         let inputs: React.ReactNode[] = [];
   
         for (const key in filledProperties) {
           const filledProperty = filledProperties[key];
-          if (filledProperty && Array.isArray(filledProperty)) {
+
+          let nextInitialValue = null;
+          if(newInitialValue && typeof newInitialValue === 'object' && !Array.isArray(newInitialValue) && (key in newInitialValue) && newInitialValue[key]) {
+            nextInitialValue = newInitialValue[key];
+          }
+          if (Array.isArray(filledProperty)) {   
             inputs.push(
               <AdditionalPicker
                 key={key}
                 options={filledProperty as JsonArray}
                 label={key}
-                setAggregatedProperties={setAggregatedProperties}
+                setInputStateValue={setInputStateValue}
+                setAggregatedPropertiesValue={setAggregatedPropertiesValue}
                 keys={[...keys, key]}
+                initialValue={nextInitialValue}
               />,
             );
           } else if (
@@ -71,22 +87,18 @@ export const AdditionalPicker = ({
                 options={(filledProperty as any).value as JsonArray}
                 properties={(filledProperty as any).properties}
                 optionLabel={(filledProperty as any).optionLabel as string}
-                setAggregatedProperties={setAggregatedProperties}
+                setInputStateValue={setInputStateValue}
+                setAggregatedPropertiesValue={setAggregatedPropertiesValue}
                 keys={[...keys, key]}
+                initialValue={nextInitialValue}
               />,
             );
           }
         }
         setNewInputs(inputs);
       } else {
-        setNewInputs([]);
-        if (value) setAggregatedProperties(keys, value);
-      }
-
-      setAutocompleteValue(value || null);
-  
-      if (!value) {
-        setNewInputs([]);
+        setInputStateValue(keys, value);
+        setAggregatedPropertiesValue(keys, value);
       }
     },
     [properties],
@@ -110,10 +122,23 @@ export const AdditionalPicker = ({
   };
 
   useEffect(() => {
-    if (options.length === 1) {
-      setAutocompleteValue(options[0]);
-      onSelectEntityProperty(null, options[0]);
-    } else {
+    let optionToSelect = null;
+
+    if(initialValue && typeof initialValue == 'object' && !Array.isArray(initialValue) && initialValue?.$_value) {
+      optionToSelect = initialValue.$_value;
+    } 
+    else if(initialValue) {
+      optionToSelect = initialValue;
+    }
+    else if (options.length === 1) {
+      optionToSelect = options[0];
+    }
+
+    if(optionToSelect) {
+      setAutocompleteValue(optionToSelect);
+      onSelectEntityProperty(null, optionToSelect, initialValue);
+    }
+    else {
       setAutocompleteValue(null);
       setNewInputs([]);
     }
