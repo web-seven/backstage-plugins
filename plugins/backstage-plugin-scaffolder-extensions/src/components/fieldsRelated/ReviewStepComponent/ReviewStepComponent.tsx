@@ -30,6 +30,8 @@ export const ReviewStepComponent = (props: ReviewStepProps): JSX.Element => {
   const styles = useStyles();
   const { formData, handleBack, steps, handleCreate } = props;
 
+  delete formData.formState;
+
   return (
     <>
       <ReviewState
