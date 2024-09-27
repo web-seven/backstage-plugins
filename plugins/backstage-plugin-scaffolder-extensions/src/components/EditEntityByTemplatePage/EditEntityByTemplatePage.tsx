@@ -98,14 +98,13 @@ export const EditEntityByTemplatePage = (
   });
 
   const onCreate = async (values: Record<string, JsonValue>) => {    
-    values = {...values, $_editData: btoa(JSON.stringify({...values, formState }))};
+    values = {...values, _editData: btoa(JSON.stringify({...values, formState }))};
 
     const { taskId } = await scaffolderApi.scaffold({
       templateRef,
       values,
       secrets,
     });
-    setFormState({});
     navigate(taskRoute({ taskId }));
   };
 
