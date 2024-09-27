@@ -50,7 +50,7 @@ export const EditEntityByTemplatePage = (
   const catalogApi = useApi(catalogApiRef);
   const navigate = useNavigate();
 
-  const FORMDATA_ANNOTATION_PATH = 'backstage.io/form-data';
+  const FORMDATA_ANNOTATION_PATH = 'backstage.io/edit-data';
 
   const [initialState, setInitialState] = useState<Record<string, JsonValue>>(
     {},
@@ -76,7 +76,7 @@ export const EditEntityByTemplatePage = (
           const entity = await catalogApi.getEntityByRef(entityRef);
           const encodedInitialState =
             entity?.metadata?.annotations?.[FORMDATA_ANNOTATION_PATH] || '';
-          
+
           if (encodedInitialState) {
             setInitialState(JSON.parse(atob(encodedInitialState)));
           }
@@ -98,13 +98,14 @@ export const EditEntityByTemplatePage = (
   });
 
   const onCreate = async (values: Record<string, JsonValue>) => {    
-    values = {...values, formState: {...formState}}
+    values = {...values, $_editData: btoa(JSON.stringify({...values, formState }))};
+
     const { taskId } = await scaffolderApi.scaffold({
       templateRef,
       values,
       secrets,
     });
-    setFormState({additionalValues: {}, entityName: ''});
+    setFormState({});
     navigate(taskRoute({ taskId }));
   };
 
