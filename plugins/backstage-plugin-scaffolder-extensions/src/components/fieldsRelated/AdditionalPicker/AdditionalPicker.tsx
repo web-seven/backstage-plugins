@@ -71,7 +71,7 @@ export const AdditionalPicker = ({
                 setInputStateValue={setInputStateValue}
                 setAggregatedPropertiesValue={setAggregatedPropertiesValue}
                 keys={[...keys, key]}
-                initialValue={nextInitialValue}
+                initialValue={nextInitialValue ?? null}
               />,
             );
           } else if (
@@ -90,7 +90,7 @@ export const AdditionalPicker = ({
                 setInputStateValue={setInputStateValue}
                 setAggregatedPropertiesValue={setAggregatedPropertiesValue}
                 keys={[...keys, key]}
-                initialValue={nextInitialValue}
+                initialValue={nextInitialValue ?? null}
               />,
             );
           }
