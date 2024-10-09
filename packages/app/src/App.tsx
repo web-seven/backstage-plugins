@@ -43,6 +43,7 @@ import {
   ReviewStepComponent,
   EditEntityByTemplatePageWrapper
 } from '@web-seven/backstage-plugin-scaffolder-extensions';
+import { openfgaPlugin } from '@web-seven/backstage-plugin-openfga';
 
 const app = createApp({
   apis,
@@ -66,6 +67,9 @@ const app = createApp({
   components: {
     SignInPage: props => <SignInPage {...props} auto providers={['guest']} />,
   },
+  plugins: [
+    openfgaPlugin
+  ]
 });
 
 
