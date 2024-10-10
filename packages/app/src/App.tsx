@@ -41,7 +41,7 @@ import {
   EntityObjectPickerFieldExtension,
   EntityValuePickerFieldExtension,
   ReviewStepComponent,
-  EditEntityByTemplatePageWrapper
+  EditEntityByTemplatePage
 } from '@web-seven/backstage-plugin-scaffolder-extensions';
 
 const app = createApp({
@@ -95,7 +95,7 @@ const routes = (
           components={{
             ReviewStepComponent,
             EXPERIMENTAL_TemplateWizardPageComponent:
-              EditEntityByTemplatePageWrapper,
+              EditEntityByTemplatePage,
           }}
         />
       }

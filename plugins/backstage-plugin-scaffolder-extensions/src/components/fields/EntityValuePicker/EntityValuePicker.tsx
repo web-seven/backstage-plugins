@@ -37,9 +37,9 @@ import { AdditionalPicker } from '../../fieldsRelated/AdditionalPicker';
 import { useTemplateFormState } from '../../../FormStateContext';
 
 type FormState = {
-  additionalValues: JsonObject,
-  entityName: string
-}
+  additionalValues: JsonObject;
+  entityName: string;
+};
 
 /**
  * The underlying component that is rendered in the form for the `EntityValuePicker`
@@ -58,7 +58,10 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
     name,
   } = props;
 
-  const { formState, setFormState } = useTemplateFormState();
+  const templateFormState = useTemplateFormState();
+  const { formState, setFormState } = templateFormState
+    ? templateFormState
+    : { formState: null, setFormState: null };
 
   const [autocompleteValue, setAutocompleteValue] = useState<Entity | null>(
     null,
@@ -69,7 +72,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
     [],
   );
   const aggregatedProperties = useRef<JsonObject>({}),
-        inputsState = useRef<FormState>({additionalValues: {}, entityName: ''});
+    inputsState = useRef<FormState>({ additionalValues: {}, entityName: '' });
 
   const valuePath: string | undefined = uiSchema['ui:options']?.valuePath;
 
@@ -117,7 +120,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
   function setTargetValue(
     target: JsonObject,
     keys: string[],
-    value: JsonValue | undefined
+    value: JsonValue | undefined,
   ) {
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i];
@@ -126,32 +129,41 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
       }
       target = target[key] as JsonObject;
     }
-  
+
     const finalKey = keys[keys.length - 1];
     target[finalKey] =
       typeof value === 'object' && value !== null && !Array.isArray(value)
         ? { ...value }
         : value;
   }
-  
+
   function setInputStateValue(keys: string[], value: JsonValue | undefined) {
     setTargetValue(inputsState.current.additionalValues, keys, value);
-    setFormState({
-      [name]: {
-        ...inputsState.current,
-      },
-    });
+    setFormState &&
+      setFormState({
+        [name]: {
+          ...inputsState.current,
+        },
+      });
   }
-  
-  function setAggregatedPropertiesValue(keys: string[], value: JsonValue | undefined) {
+
+  function setAggregatedPropertiesValue(
+    keys: string[],
+    value: JsonValue | undefined,
+  ) {
     setTargetValue(aggregatedProperties.current, keys, value);
-    entityChange(nunjucks.renderString(valueTemplate, aggregatedProperties.current));
+    entityChange(
+      nunjucks.renderString(valueTemplate, aggregatedProperties.current),
+    );
   }
 
   const onEntitySelect = useCallback(
     (_: any, ref: Entity | null) => {
       if (ref) {
-        inputsState.current = {entityName: ref.metadata.name, additionalValues: {}};
+        inputsState.current = {
+          entityName: ref.metadata.name,
+          additionalValues: {},
+        };
         if (valuePath) {
           const valueByPath =
             typeof getValueByPath(ref, valuePath) === 'string'
@@ -160,11 +172,12 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
 
           entityChange(valueByPath);
         } else {
-          setFormState({
-            [name]: {
-              ...inputsState.current,
-            },
-          });
+          setFormState &&
+            setFormState({
+              [name]: {
+                ...inputsState.current,
+              },
+            });
           entityChange(
             nunjucks.renderString(valueTemplate, aggregatedProperties.current),
           );
@@ -192,8 +205,8 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
           ? (formState?.[name] as FormState)
           : initialFormState;
 
-        const entity = entities?.catalogEntities.find(
-          e => e.metadata.name === inputsState.current?.entityName,
+      const entity = entities?.catalogEntities.find(
+        e => e.metadata.name === inputsState.current?.entityName,
       );
       initialEntity = entity ? entity : null;
     }
@@ -206,8 +219,9 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
           : JSON.stringify(getValueByPath(initialEntity, valuePath));
       entityChange(valueByPath);
     } else if (!valuePath && initialEntity) {
-
-      entityChange(nunjucks.renderString(valueTemplate, aggregatedProperties.current));
+      entityChange(
+        nunjucks.renderString(valueTemplate, aggregatedProperties.current),
+      );
       inputsState.current.entityName = initialEntity.metadata.name;
 
       renderAdditionalInputs(initialEntity);
@@ -226,9 +240,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
     return '';
   }
 
-  function renderAdditionalInputs(
-    entity: Entity | null
-  ) {
+  function renderAdditionalInputs(entity: Entity | null) {
     let additionalInputs: React.ReactNode[] = [];
 
     if (entity) {

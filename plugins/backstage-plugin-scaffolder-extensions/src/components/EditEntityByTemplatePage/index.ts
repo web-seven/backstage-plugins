@@ -1,2 +1,2 @@
 export { EditEntityByTemplatePage } from './EditEntityByTemplatePage'
-export { EditEntityByTemplatePageWrapper } from './EditEntityByTemplatePageWrapper'
+export { EditEntityByTemplatePageContext } from './EditEntityByTemplatePageContext'
