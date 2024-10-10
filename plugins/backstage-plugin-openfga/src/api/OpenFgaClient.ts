@@ -28,6 +28,12 @@ export default class OpenFgaClient implements OpenFgaApi {
     if (baseUrl) {
       let response: TupleGridData = await this.request<TupleGridData>(
         baseUrl,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'GET',
+        }
       );
 
       if (Object.keys(response).length) {
@@ -64,8 +70,8 @@ export default class OpenFgaClient implements OpenFgaApi {
   }
 
   private async request<T>(path: string, init?: any): Promise<T> {
-    const baseUrl = `${await this.discoveryApi.getBaseUrl('openfga')}/`;
-    const url = path.replace('/:base-url', `/${baseUrl}`);
+    const baseUrl = `${await this.discoveryApi.getBaseUrl('openfga')}`;
+    const url = path.replace('/:base-url', `${baseUrl}`);console.log(init)
 
     const response = await this.fetchApi.fetch(url, init);
 

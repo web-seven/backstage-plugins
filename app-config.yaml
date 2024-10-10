@@ -105,4 +105,8 @@ catalog:
     #     - allow: [User, Group]
 
 openfga:
-  baseUrl: /:scope/guest-mock.json
+  baseUrl: /:base-url/relations/:scope
+  token: token
+  host: http://localhost:8080
+  # token: ${OPENFGA_AUTH_TOKEN}
+  # host: ${OPENFGA_HOST}

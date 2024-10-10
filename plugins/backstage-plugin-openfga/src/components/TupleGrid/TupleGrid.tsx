@@ -27,7 +27,7 @@ const useStyles = makeStyles(theme => ({
 export const TupleGrid = (): JSX.Element => {
   const styles = useStyles();
   const { kind, name } = useRouteRefParams(entityRouteRef);
-  const scope = `${kind}:${name}`;
+  const scope = `${kind}-${name}`;
   const openFgaApi = useApi(openFgaApiRef);
   const [data, setData] = useState<TupleGridData>({
     resources: [],

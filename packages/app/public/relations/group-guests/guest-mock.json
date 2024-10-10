@@ -1,0 +1,10 @@
+{
+  "resources": ["resource-a", "resource-b", "resource-c", "resource-d"],
+  "roles": ["read", "create", "update", "delete"],
+  "relations": {
+    "resource-a": ["delete", "read"],
+    "resource-b": ["read"],
+    "resource-c": ["read", "create", "update", "delete"],
+    "resource-d": ["read", "delete", "create"]
+  }
+}
