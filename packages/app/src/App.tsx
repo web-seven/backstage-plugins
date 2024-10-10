@@ -41,7 +41,7 @@ import {
   EntityObjectPickerFieldExtension,
   EntityValuePickerFieldExtension,
   ReviewStepComponent,
-  EditEntityByTemplatePageWrapper
+  EditEntityByTemplatePage
 } from '@web-seven/backstage-plugin-scaffolder-extensions';
 import { openfgaPlugin } from '@web-seven/backstage-plugin-openfga';
 
@@ -99,7 +99,7 @@ const routes = (
           components={{
             ReviewStepComponent,
             EXPERIMENTAL_TemplateWizardPageComponent:
-              EditEntityByTemplatePageWrapper,
+              EditEntityByTemplatePage,
           }}
         />
       }

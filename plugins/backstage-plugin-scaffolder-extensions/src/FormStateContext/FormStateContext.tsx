@@ -60,13 +60,11 @@ export interface ScaffolderUseTemplateFormState {
  * passed to the Scaffolder backend.
  * @public
  */
-export const useTemplateFormState = (): ScaffolderUseTemplateFormState => {
+export const useTemplateFormState = (): ScaffolderUseTemplateFormState | null => {
   const value = useContext(FormState)?.atVersion(1);
 
   if (!value) {
-    throw new Error(
-      'useTemplateFormState must be used within a FormStateContextProvider',
-    );
+    return null;
   }
 
   const { setFormState: updateFormState, formState = {} } = value;
