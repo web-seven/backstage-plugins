@@ -109,3 +109,10 @@ openfga:
   token: ${OPENFGA_AUTH_TOKEN}
   host: ${OPENFGA_HOST}
   storeId: ${OPENFGA_STORE_ID}
+  auth:
+    apiUrl: ${OPENFGA_API_URL}
+    storeId: ${OPENFGA_STORE_ID}
+    authorizationModelId: ${OPENFGA_AUTHORIZATION_MODEL_ID} 
+  plugins:
+  - catalog
+  - scaffolder  

@@ -19,12 +19,8 @@ export const openfgaPlugin = createBackendPlugin({
         config: coreServices.rootConfig,
       },
       async init({ httpRouter, logger, config }) {
-        httpRouter.use(
-          await createRouter({
-            logger,
-            config,
-          }),
-        );
+        const router = await createRouter({logger, config });
+        httpRouter.use(router);
         httpRouter.addAuthPolicy({
           path: '/health',
           allow: 'unauthenticated',
