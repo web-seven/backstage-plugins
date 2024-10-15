@@ -1,11 +1,11 @@
 import { MiddlewareFactory } from '@backstage/backend-defaults/rootHttpRouter';
-import express from 'express';
-import Router from 'express-promise-router';
 import { OpenfgaRoutesService } from '../OpenfgaRoutesService';
 import { RouterOptions } from '../types';
 import { LoggerService  } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
-import {collectPermissions} from '../permitions/permissionsCollector'
+import express from 'express';
+import Router from 'express-promise-router'
+import {collectPermissions} from '../permissions/permissionsCollector'
 import {createAuthorizationModel} from '../fga/openfgaClient'
 
 export async function createRouter(
@@ -20,14 +20,14 @@ export async function createRouter(
     logger.info('PONG!');
   response.json({ status: 'ok' });
   });
-
-  router.get('/extract-permitions', async (_, response) => {
-    const permissions = await collectPermissions(config);
+ 
+  router.get('/extract-permissions', async (_, response) => {
+    const permissions = await collectPermissions(config, logger);
     response.json({ data: permissions });
   });
 
   router.get('/create-authorization-model', async (_, response) => {
-    const permitionList = await collectPermissions(config);
+    const permitionList = await collectPermissions(config, logger);
     const model = await createAuthorizationModel(permitionList, config);
 
     response.json({ data: model });

@@ -1,8 +1,9 @@
 import { Config } from '@backstage/config';
 import axios from 'axios';
+import { LoggerService  } from '@backstage/backend-plugin-api';
 
-export async function collectPermissions(config: Config): Promise<{ [name: string]: string[] }> {
-  const urls = permitionsPaths(config);
+export async function collectPermissions(config: Config, logger: LoggerService): Promise<{ [name: string]: string[] }> {
+  const urls = permissionsPaths(config);
   const permissions: Array<any> = [];
 
   for (const url of urls) {
@@ -11,26 +12,26 @@ export async function collectPermissions(config: Config): Promise<{ [name: strin
       if (result.data.permissions) {
         permissions.push(...result.data.permissions);
       } else {
-        console.log('No permissions found at:', url);
+        logger.error('No permissions found');
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 404) {
-        console.log(`URL not found: ${url}`);
+        logger.error(`URL not found: ${url}`);
       } else {
-        console.error(`Error fetching permissions from ${url}:`, error);
+        logger.error(`Error fetching permissions from ${url}`);
       }
     }
   }
 
   if (permissions.length > 0) {
-    const permissionData = changeArrayStructure(permissions);
+    const permissionData = changeArrayStructure(permissions, logger);
     return permissionData;
   } else {
     return {};
   }
 }
 
-function changeArrayStructure<T extends { name: string }>(permissions: Array<T>): { [name: string]: string[] } {
+function changeArrayStructure<T extends { name: string}>(permissions: Array<T>, logger: LoggerService): { [name: string]: string[] } {
   const permissionMap: { [name: string]: string[] } = {};
 
   permissions.forEach((permission: any) => {
@@ -45,17 +46,17 @@ function changeArrayStructure<T extends { name: string }>(permissions: Array<T>)
         }
         permissionMap[name].push(action);
       } else {
-        console.warn('Permission action is undefined for:', permission);
-      }
-    } else {
-      console.warn('Permission name is undefined:', permission);
+        logger.error('Permission action is undefined for:', permission);
+            }
+          } else {
+            logger.error('Permission name is undefined:', permission);
     }
   });
 
   return permissionMap;
 }
 
-function permitionsPaths(config: Config) {
+function permissionsPaths(config: Config) {
   const baseurl = config.getOptionalString('backend.baseUrl') ?? '';
   const pluginsList = config.getOptionalStringArray('openfga.plugins') ?? [];
   let paths = [];
