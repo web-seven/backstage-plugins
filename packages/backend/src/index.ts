@@ -42,6 +42,8 @@ backend.add(import('@backstage/plugin-search-backend-module-techdocs/alpha'));
 
 backend.add(import('@web-seven/backstage-plugin-scaffolder-backend-module-sealed-secrets'));
 backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
+backend.add(import('@backstage/plugin-kubernetes-backend/alpha'));
+backend.add(import('@web-seven/backstage-module-crossplane'));
 backend.add(encodeFilters);
 
 backend.start();
