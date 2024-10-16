@@ -20,11 +20,7 @@ export const openfgaPlugin = createBackendPlugin({
       },
       async init({ httpRouter, logger, config }) {
         const router = await createRouter({logger, config });
-        httpRouter.use(router);
-        httpRouter.addAuthPolicy({
-          path: '/health',
-          allow: 'unauthenticated',
-        });
+        httpRouter.use(router);        
       },
     });
   },

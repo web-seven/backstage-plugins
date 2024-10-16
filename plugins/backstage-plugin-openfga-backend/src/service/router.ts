@@ -6,7 +6,8 @@ import { Config } from '@backstage/config';
 import express from 'express';
 import Router from 'express-promise-router'
 import {collectPermissions} from '../permissions/permissionsCollector'
-import {createAuthorizationModel} from '../fga/openfgaClient'
+import {OpenFgaService} from './openfgaClient'
+
 
 export async function createRouter(
   options: RouterOptions,
@@ -15,11 +16,6 @@ export async function createRouter(
   const router = Router();
   const service = new OpenfgaRoutesService({ logger, config });
   router.use(express.json());
-
-  router.get('/health', async (_, response) => {
-    logger.info('PONG!');
-  response.json({ status: 'ok' });
-  });
  
   router.get('/extract-permissions', async (_, response) => {
     const permissions = await collectPermissions(config, logger);
@@ -28,7 +24,8 @@ export async function createRouter(
 
   router.get('/create-authorization-model', async (_, response) => {
     const permitionList = await collectPermissions(config, logger);
-    const model = await createAuthorizationModel(permitionList, config);
+    const openFgaService = new OpenFgaService(config);
+    const model = await openFgaService.createAuthorizationModel(permitionList);
 
     response.json({ data: model });
   });
