@@ -17,9 +17,10 @@ export const openfgaPlugin = createBackendPlugin({
         httpRouter: coreServices.httpRouter,
         logger: coreServices.logger,
         config: coreServices.rootConfig,
+        auth: coreServices.auth,
       },
-      async init({ httpRouter, logger, config }) {
-        const router = await createRouter({logger, config });
+      async init({ httpRouter, logger, config, auth }) {
+        const router = await createRouter({logger, config, auth });
         httpRouter.use(router);        
       },
     });

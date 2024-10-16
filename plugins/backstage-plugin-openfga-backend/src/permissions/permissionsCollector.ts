@@ -1,24 +1,35 @@
 import { Config } from '@backstage/config';
 import axios from 'axios';
-import { LoggerService  } from '@backstage/backend-plugin-api';
+import { LoggerService } from '@backstage/backend-plugin-api';
+import { AuthService } from '@backstage/backend-plugin-api';
 
-export async function collectPermissions(config: Config, logger: LoggerService): Promise<{ [name: string]: string[] }> {
-  const urls = permissionsPaths(config);
+export async function collectPermissions(config: Config, logger: LoggerService, auth: AuthService): Promise<{ [name: string]: string[] }> {
+  const urlsAndPlugins = permissionsPaths(config);
   const permissions: Array<any> = [];
 
-  for (const url of urls) {
+  for (const { url, plugin } of urlsAndPlugins) {
     try {
-      const result = await axios.get(url);
+      const { token } = await auth.getPluginRequestToken({
+        onBehalfOf: await auth.getOwnServiceCredentials(),
+        targetPluginId: plugin,
+      });
+
+      const result = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       if (result.data.permissions) {
         permissions.push(...result.data.permissions);
       } else {
-        logger.error('No permissions found');
+        logger.error(`No permissions found for plugin: ${plugin}`);
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 404) {
-        logger.error(`URL not found: ${url}`);
+        logger.error(`URL not found for plugin: ${plugin}, URL: ${url}`);
       } else {
-        logger.error(`Error fetching permissions from ${url}`);
+        logger.error(`Error fetching permissions for plugin: ${plugin}, URL: ${url}`);
       }
     }
   }
@@ -59,10 +70,15 @@ function changeArrayStructure<T extends { name: string}>(permissions: Array<T>, 
 function permissionsPaths(config: Config) {
   const baseurl = config.getOptionalString('backend.baseUrl') ?? '';
   const pluginsList = config.getOptionalStringArray('openfga.plugins') ?? [];
-  let paths = [];
-  for (let plugin of pluginsList) {
-    paths.push(`${baseurl}/api/${plugin}/.well-known/backstage/permissions/metadata`);
+  const paths = [];
+
+  for (const plugin of pluginsList) {
+    paths.push({
+      url: `${baseurl}/api/${plugin}/.well-known/backstage/permissions/metadata`,
+      plugin,
+    });
   }
+
   return paths;
 }
 

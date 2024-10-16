@@ -1,8 +1,6 @@
 import { MiddlewareFactory } from '@backstage/backend-defaults/rootHttpRouter';
 import { OpenfgaRoutesService } from '../OpenfgaRoutesService';
 import { RouterOptions } from '../types';
-import { LoggerService  } from '@backstage/backend-plugin-api';
-import { Config } from '@backstage/config';
 import express from 'express';
 import Router from 'express-promise-router'
 import {collectPermissions} from '../permissions/permissionsCollector'
@@ -12,18 +10,19 @@ import {OpenFgaService} from './openfgaClient'
 export async function createRouter(
   options: RouterOptions,
 ): Promise<express.Router> {
-  const { logger, config } = options;
+  const {logger, config, auth} = options;
+
   const router = Router();
-  const service = new OpenfgaRoutesService({ logger, config });
+  const service = new OpenfgaRoutesService({ logger, config, auth });
   router.use(express.json());
  
   router.get('/extract-permissions', async (_, response) => {
-    const permissions = await collectPermissions(config, logger);
+    const permissions = await collectPermissions(config, logger, auth);
     response.json({ data: permissions });
   });
 
   router.get('/create-authorization-model', async (_, response) => {
-    const permitionList = await collectPermissions(config, logger);
+    const permitionList = await collectPermissions(config, logger, auth);
     const openFgaService = new OpenFgaService(config);
     const model = await openFgaService.createAuthorizationModel(permitionList);
 
