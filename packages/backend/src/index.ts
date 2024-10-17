@@ -44,4 +44,5 @@ backend.add(import('@web-seven/backstage-plugin-scaffolder-backend-module-sealed
 backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
 backend.add(encodeFilters);
 
+backend.add(import('@web-seven/backstage-plugin-openfga-backend'));
 backend.start();

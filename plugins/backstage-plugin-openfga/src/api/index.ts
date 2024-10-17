@@ -1,2 +1,2 @@
-export * from './OpenFgaApi';
-export * from './OpenFgaClient';
+export * from './OpenfgaApi';
+export * from './OpenfgaApiClient';

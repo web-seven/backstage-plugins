@@ -7,8 +7,8 @@ import {
 } from '@backstage/core-plugin-api';
 
 import { rootRouteRef } from './routes';
-import { openFgaApiRef } from './api';
-import OpenFgaClient from './api/OpenFgaClient';
+import { openfgaApiRef } from './api';
+import OpenFgaApiClient from './api/OpenfgaApiClient';
 
 export const openfgaPlugin = createPlugin({
   id: 'openfga',
@@ -17,14 +17,14 @@ export const openfgaPlugin = createPlugin({
   },
   apis: [
     createApiFactory({
-      api: openFgaApiRef,
+      api: openfgaApiRef,
       deps: {
         discoveryApi: discoveryApiRef,
         fetchApi: fetchApiRef,
         configApi: configApiRef,
       },
       factory: ({ discoveryApi, fetchApi, configApi }) =>
-        new OpenFgaClient({ discoveryApi, fetchApi, configApi }),
+        new OpenFgaApiClient({ discoveryApi, fetchApi, configApi }),
     }),
   ],
 });

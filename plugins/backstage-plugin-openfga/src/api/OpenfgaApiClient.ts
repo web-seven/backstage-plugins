@@ -1,13 +1,13 @@
-import { OpenFgaApi } from './OpenFgaApi';
 import { ConfigApi, DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
 import { ResponseError } from '@backstage/errors';
 import {
   TupleGridData,
-  Relations
-} from '@web-seven/backstage-plugin-openfga-common'
+  Relations,
+  SetScopeRelationsResponse,
+} from '@web-seven/backstage-plugin-openfga-backend';
+import { OpenFgaApi } from '../types';
 
-
-export default class OpenFgaClient implements OpenFgaApi {
+export default class OpenFgaApiClient implements OpenFgaApi {
   private readonly discoveryApi: DiscoveryApi;
   private readonly fetchApi: FetchApi;
   private readonly configApi: ConfigApi;
@@ -22,13 +22,16 @@ export default class OpenFgaClient implements OpenFgaApi {
     this.configApi = options.configApi;
   }
 
-  async getScopeRelations(scope: string): Promise<TupleGridData> {
-    const baseUrl = this.getBaseUrl(scope);
+  async getScopeRelations(scope: string, name: string): Promise<TupleGridData> {
+    const baseUrl = this.getBaseUrl(scope, name);
 
     if (baseUrl) {
-      let response: TupleGridData = await this.request<TupleGridData>(
-        baseUrl,
-      );
+      let response: TupleGridData = await this.request<TupleGridData>(baseUrl, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'GET',
+      });
 
       if (Object.keys(response).length) {
         return response;
@@ -37,14 +40,18 @@ export default class OpenFgaClient implements OpenFgaApi {
     return {
       resources: [],
       roles: [],
-      relations: {}
+      relations: {},
     };
   }
 
-  async setScopeRelations(scope: string, relations: Relations) {
-    const baseUrl = this.getBaseUrl(scope);
+  async setScopeRelations(
+    scope: string,
+    name: string,
+    relations: Relations,
+  ): Promise<SetScopeRelationsResponse> {
+    const baseUrl = this.getBaseUrl(scope, name);
     try {
-      const response = await this.request(baseUrl, {
+      const response = await this.request<SetScopeRelationsResponse>(baseUrl, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -57,16 +64,16 @@ export default class OpenFgaClient implements OpenFgaApi {
     }
   }
 
-  private getBaseUrl(scope: string): string {
+  private getBaseUrl(scope: string, name: string): string {
     return this.configApi
       .getString('openfga.baseUrl')
-      .replace('/:scope', `/${scope}`);
+      .replace('/:scope', `/${scope}`)
+      .replace('/:name', `/${name}`);
   }
 
   private async request<T>(path: string, init?: any): Promise<T> {
-    const baseUrl = `${await this.discoveryApi.getBaseUrl('openfga')}/`;
-    const url = path.replace('/:base-url', `/${baseUrl}`);
-
+    const baseUrl = `${await this.discoveryApi.getBaseUrl('openfga')}`;
+    const url = path.replace('/:base-url', `${baseUrl}`);
     const response = await this.fetchApi.fetch(url, init);
 
     if (!response.ok) {

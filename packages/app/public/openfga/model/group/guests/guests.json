@@ -1,0 +1,17 @@
+{
+  "resources": ["resource-a", "resource-b"],
+  "roles": ["read", "create", "update", "delete"],
+  "relations": {
+    "resource-a": {
+      "create": true,
+      "update": false,
+      "read": true,
+      "delete": true
+    },
+    "resource-b": {
+      "update": false,
+      "create": true,
+      "read": true
+    }
+  }
+}
