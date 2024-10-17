@@ -2,10 +2,7 @@ import {
   type EntityFilterQuery,
   CATALOG_FILTER_EXISTS,
 } from '@backstage/catalog-client';
-import {
-  Entity,
-  stringifyEntityRef,
-} from '@backstage/catalog-model';
+import { Entity, stringifyEntityRef } from '@backstage/catalog-model';
 import { useApi } from '@backstage/core-plugin-api';
 import {
   EntityRefPresentationSnapshot,
@@ -92,16 +89,34 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
     (_: any, ref: Entity | null) => {
       onChange(ref ? ref : undefined);
     },
-    [onChange, formData],
+    [onChange],
   );
 
   const [inputValue, setInputValue] = useState<string>('');
+
+  // Get the label to display for a given entity based on the chosen label variant.
+  const getOptionLabel = useCallback(
+    (ref: Entity) => {
+      try {
+        const presentation = entities?.entityRefToPresentation.get(
+          stringifyEntityRef(ref),
+        );
+
+        return presentation?.[
+          labelVariant as keyof EntityRefPresentationSnapshot
+        ] as string;
+      } catch (e) {
+        return '';
+      }
+    },
+    [entities, labelVariant],
+  );
 
   useEffect(() => {
     if (entities && formData && Object.keys(formData).length) {
       setInputValue(getOptionLabel(formData as Entity));
     }
-  }, [formData, entities]);
+  }, [formData, entities, getOptionLabel]);
 
   // If only one entity is available, select it automatically.
   useEffect(() => {
@@ -110,22 +125,7 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
       setInputValue(getOptionLabel(firstEntity));
       onChange(firstEntity);
     }
-  }, [entities, onChange]);
-
-  // Get the label to display for a given entity based on the chosen label variant.
-  function getOptionLabel(ref: Entity) {
-    try {
-      const presentation = entities?.entityRefToPresentation.get(
-        stringifyEntityRef(ref),
-      );
-
-      return presentation?.[
-        labelVariant as keyof EntityRefPresentationSnapshot
-      ] as string;
-    } catch (e) {
-      return '';
-    }
-  }
+  }, [entities, onChange, getOptionLabel]);
 
   return (
     <FormControl

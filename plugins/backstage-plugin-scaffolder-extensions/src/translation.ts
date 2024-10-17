@@ -5,9 +5,8 @@ export const scaffolderExtensionsTranslationRef = createTranslationRef({
   messages: {
     editEntityByTemplatePage: {
       title: 'Edit entity',
-      subtitle:
-        'Edit the entity using the template with which it was created.',
+      subtitle: 'Edit the entity using the template with which it was created.',
       pageTitle: 'Edit entity',
     },
-  }
+  },
 });

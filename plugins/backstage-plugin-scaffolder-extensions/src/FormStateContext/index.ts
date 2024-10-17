@@ -1,6 +1,5 @@
 export {
-    useTemplateFormState,
-    FormStateContextProvider,
-    type ScaffolderUseTemplateFormState,
-  } from './FormStateContext';
-  
+  useTemplateFormState,
+  FormStateContextProvider,
+  type ScaffolderUseTemplateFormState,
+} from './FormStateContext';

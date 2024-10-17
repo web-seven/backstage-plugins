@@ -26,12 +26,15 @@ export default class OpenFgaApiClient implements OpenFgaApi {
     const baseUrl = this.getBaseUrl(scope, name);
 
     if (baseUrl) {
-      let response: TupleGridData = await this.request<TupleGridData>(baseUrl, {
-        headers: {
-          'Content-Type': 'application/json',
+      const response: TupleGridData = await this.request<TupleGridData>(
+        baseUrl,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'GET',
         },
-        method: 'GET',
-      });
+      );
 
       if (Object.keys(response).length) {
         return response;

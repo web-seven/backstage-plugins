@@ -52,8 +52,14 @@ export type EntityDisplayNameProps = {
 export const EntityDisplayName = (
   props: EntityDisplayNameProps,
 ): JSX.Element => {
-  const { entityRef, hideIcon, disableTooltip, defaultKind, defaultNamespace, labelVariant = 'primaryTitle' } =
-    props;
+  const {
+    entityRef,
+    hideIcon,
+    disableTooltip,
+    defaultKind,
+    defaultNamespace,
+    labelVariant = 'primaryTitle',
+  } = props;
 
   const classes = useStyles();
   const entityPresentation = useEntityPresentation(entityRef, {
@@ -61,7 +67,8 @@ export const EntityDisplayName = (
     defaultNamespace,
   });
 
-  const contentTitle = entityPresentation?.[labelVariant as keyof typeof entityPresentation];
+  const contentTitle =
+    entityPresentation?.[labelVariant as keyof typeof entityPresentation];
 
   let content = <>{contentTitle}</>;
 

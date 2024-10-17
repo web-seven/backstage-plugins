@@ -4,8 +4,8 @@ import { JsonObject } from '@backstage/types';
 import { AuthService } from '@backstage/backend-plugin-api';
 
 export type Relations = {
-  [key in string]: {
-    [key in string]: boolean;
+  [resourceKey in string]: {
+    [relationKey in string]: boolean;
   };
 };
 
@@ -76,5 +76,5 @@ export type TupleKeys = {
 export interface RouterOptions {
   logger: LoggerService;
   config: Config;
-  auth:  AuthService;
+  auth: AuthService;
 }

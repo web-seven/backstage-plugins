@@ -50,7 +50,9 @@ export const EntityObjectPickerFieldSchema = makeFieldSchemaFromZod(
     labelVariant: z
       .string()
       .optional()
-      .describe('Variant of displaying options labels (entityRef, primaryTitle, secondaryTitle)')
+      .describe(
+        'Variant of displaying options labels (entityRef, primaryTitle, secondaryTitle)',
+      ),
   }),
 );
 
@@ -72,4 +74,4 @@ export type EntityObjectPickerFilterQuery = z.TypeOf<
 >;
 
 export type EntityObjectPickerFilterQueryValue =
-EntityObjectPickerFilterQuery[keyof EntityObjectPickerFilterQuery];
+  EntityObjectPickerFilterQuery[keyof EntityObjectPickerFilterQuery];

@@ -28,8 +28,10 @@
     "@backstage/backend-plugin-api": "^0.7.0",
     "@backstage/config": "^1.2.0",
     "@backstage/plugin-auth-backend-module-guest-provider": "^0.2.0",
+    "@backstage/types": "^1.1.1",
     "@openfga/sdk": "^0.7.0",
     "@types/esprima": "^4.0.6",
+    "axios": "^1.7.7",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
     "node-fetch": "^2.6.7"

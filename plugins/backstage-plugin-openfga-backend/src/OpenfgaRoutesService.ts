@@ -165,8 +165,8 @@ export class OpenfgaRoutesService {
       const relations: Relations = request.body;
       const tupleKeys: TupleKeys = { writes: [], deletes: [] };
 
-      Object.entries(relations).forEach(([resource, relations]) => {
-        Object.entries(relations).forEach(([relation, value]) => {
+      Object.entries(relations).forEach(([resource, resourceRelations]) => {
+        Object.entries(resourceRelations).forEach(([relation, value]) => {
           const tupleKey: TupleKey = {
             user: `${scope}:${name}`,
             relation,

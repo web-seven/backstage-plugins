@@ -5,46 +5,47 @@ This plugin for Backstage provides a `ScaffolderFieldExtensions` that enhances t
 ## Configuration
 
 ### EntityValuePicker
+
 Configuration is done through the field's settings in the template. The following options are supported:
 
 - `ui:options.labelVariant`: Specifies which variant of the `label` should be used for displaying the options. The supported values are:
+
   - `primaryTitle`: The primary title of the entity.
   - `secondaryTitle`: The secondary title of the entity.
   - `entityRef`: The entity reference.
 
 - `ui:options.valuesSchema`: A schema that describes which entity properties should be used to create the object used by the template.
 
-Example of a `valuesSchema`: 
+Example of a `valuesSchema`:
 
 ```yaml
 valuesSchema:
   name: metadata.name
   tag: spec.tags
   version: spec.version
-  user:  
+  user:
     value: spec.users
     optionLabel: name
-    properties: 
+    properties:
       user_name: name
       user_id: id
-      address: 
+      address:
         value: address
         optionLabel: street
-        properties: 
+        properties:
           street: street
       jobs:
         value: jobs
         optionLabel: title
-        properties: 
+        properties:
           id: id
           address: address
-
 ```
+
 If the selected value from the template is an array, an additional picker will be rendered to select the final value from the array. If the value is an array of objects, `optionLable` is used to specify which property of the selected object will be the label for the rendered picker options. Additionally, you can choose which properties of the object will be selected with `properties`. `value` is the path to this array of objects.
 
-
 - `ui:options.template`: Nunjucks template that uses selected values from entity and set the final value of the EntityValuePicker
-Example of template: 
+  Example of template:
 
 ```YAML
 template: "Entity Name: {{ name }} \n
@@ -66,9 +67,9 @@ template: "Entity Name: {{ name }} \n
 To use the field extension, you need to import it and add the following section to the `ScaffolderPage` route in `App.tsx`:
 
 ```javascript
-import { 
-  EntityObjectPickerFieldExtension, 
-  EntityValuePickerFieldExtension 
+import {
+  EntityObjectPickerFieldExtension,
+  EntityValuePickerFieldExtension,
 } from '@web-seven/backstage-plugin-scaffolder-extensions';
 
 <Route path="/create" element={<ScaffolderPage />}>
@@ -76,7 +77,7 @@ import {
     <EntityObjectPickerFieldExtension />
     <EntityValuePickerFieldExtension />
   </ScaffolderFieldExtensions>
-</Route>
+</Route>;
 ```
 
 To use the custom ReviewStepComponent, you need to import it and add the following prop for `ScaffolderPage` component in `App.tsx`:
@@ -84,11 +85,13 @@ To use the custom ReviewStepComponent, you need to import it and add the followi
 ```javascript
 import { ReviewStepComponent } from '@web-seven/backstage-plugin-scaffolder-extensions';
 
-<Route path="/create" element={<ScaffolderPage components={{ReviewStepComponent}} />}>
+<Route
+  path="/create"
+  element={<ScaffolderPage components={{ ReviewStepComponent }} />}
+>
   ...
-</Route>
+</Route>;
 ```
-
 
 Example configuration of the `EntityObjectPicker` field in a template:
 
