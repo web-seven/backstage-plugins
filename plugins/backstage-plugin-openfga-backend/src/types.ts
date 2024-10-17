@@ -1,6 +1,7 @@
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 import { JsonObject } from '@backstage/types';
+import { AuthService } from '@backstage/backend-plugin-api';
 
 export type Relations = {
   [key in string]: {
@@ -75,4 +76,5 @@ export type TupleKeys = {
 export interface RouterOptions {
   logger: LoggerService;
   config: Config;
+  auth:  AuthService;
 }

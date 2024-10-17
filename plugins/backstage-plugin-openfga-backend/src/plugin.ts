@@ -10,25 +10,18 @@ import { createRouter } from './service/router';
  * @public
  */
 export const openfgaPlugin = createBackendPlugin({
-  pluginId: 'openfga',
+  pluginId: 'openfga-backend',
   register(env) {
     env.registerInit({
       deps: {
         httpRouter: coreServices.httpRouter,
         logger: coreServices.logger,
         config: coreServices.rootConfig,
+        auth: coreServices.auth,
       },
-      async init({ httpRouter, logger, config }) {
-        httpRouter.use(
-          await createRouter({
-            logger,
-            config,
-          }),
-        );
-        httpRouter.addAuthPolicy({
-          path: '/health',
-          allow: 'unauthenticated',
-        });
+      async init({ httpRouter, logger, config, auth }) {
+        const router = await createRouter({logger, config, auth });
+        httpRouter.use(router);        
       },
     });
   },
