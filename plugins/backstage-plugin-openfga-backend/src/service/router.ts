@@ -3,8 +3,8 @@ import { OpenfgaRoutesService } from '../OpenfgaRoutesService';
 import { RouterOptions } from '../types';
 import express from 'express';
 import Router from 'express-promise-router'
-import {PermissionCollector} from '../permissions/permissionsCollector'
-import {OpenFgaService} from './openfgaClient'
+import {PermissionCollector} from '../permissions/PermissionCollector'
+import {OpenFgaService} from './OpenFgaClient'
 
 
 export async function createRouter(
