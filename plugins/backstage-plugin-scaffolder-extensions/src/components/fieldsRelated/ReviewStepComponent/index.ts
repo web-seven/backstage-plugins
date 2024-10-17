@@ -1,1 +1,1 @@
-export { ReviewStepComponent } from './ReviewStepComponent'
+export { ReviewStepComponent } from './ReviewStepComponent';

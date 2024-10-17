@@ -1,5 +1,4 @@
 import { createBackend } from '@backstage/backend-defaults';
-import { encodeFilters } from '@web-seven/backstage-plugin-scaffolder-backend-module-encode-filters';
 
 const backend = createBackend();
 
@@ -40,9 +39,17 @@ backend.add(import('@backstage/plugin-search-backend-module-pg/alpha'));
 backend.add(import('@backstage/plugin-search-backend-module-catalog/alpha'));
 backend.add(import('@backstage/plugin-search-backend-module-techdocs/alpha'));
 
-backend.add(import('@web-seven/backstage-plugin-scaffolder-backend-module-sealed-secrets'));
+backend.add(
+  import(
+    '@web-seven/backstage-plugin-scaffolder-backend-module-sealed-secrets'
+  ),
+);
 backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
-backend.add(encodeFilters);
+backend.add(
+  import(
+    '@web-seven/backstage-plugin-scaffolder-backend-module-encode-filters'
+  ),
+);
 
 backend.add(import('@web-seven/backstage-plugin-openfga-backend'));
 

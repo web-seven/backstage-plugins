@@ -1,2 +1,2 @@
 export { openfgaPlugin } from './plugin';
-export * from './components'
+export * from './components';

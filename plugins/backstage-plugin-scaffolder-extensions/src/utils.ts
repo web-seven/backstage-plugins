@@ -25,29 +25,31 @@ export function replaceEntityObjectWithLink(
   const newFormData: any = { ...formData };
 
   for (const key in newFormData) {
-    const value = newFormData[key];
+    if (newFormData.hasOwnProperty(key)) {
+      const value = newFormData[key];
 
-    if (typeof schema.properties === 'object' && schema.properties !== null) {
-      const fieldSchema: JsonValue | undefined = (
-        schema.properties as JsonObject
-      )[key];
+      if (typeof schema.properties === 'object' && schema.properties !== null) {
+        const fieldSchema: JsonValue | undefined = (
+          schema.properties as JsonObject
+        )[key];
 
-      if (
-        typeof fieldSchema === 'object' &&
-        !Array.isArray(fieldSchema) &&
-        fieldSchema !== null
-      ) {
-        if (fieldSchema['ui:field'] === 'EntityObjectPicker') {
-          newFormData[key] = React.createElement(EntityRefLink, {
-            entityRef: value,
-          });
-          fieldSchema['ui:backstage'] = { review: { explode: false } };
-        } else if (
-          typeof value === 'object' &&
-          value !== null &&
-          fieldSchema?.type === 'object'
+        if (
+          typeof fieldSchema === 'object' &&
+          !Array.isArray(fieldSchema) &&
+          fieldSchema !== null
         ) {
-          newFormData[key] = replaceEntityObjectWithLink(value, fieldSchema);
+          if (fieldSchema['ui:field'] === 'EntityObjectPicker') {
+            newFormData[key] = React.createElement(EntityRefLink, {
+              entityRef: value,
+            });
+            fieldSchema['ui:backstage'] = { review: { explode: false } };
+          } else if (
+            typeof value === 'object' &&
+            value !== null &&
+            fieldSchema?.type === 'object'
+          ) {
+            newFormData[key] = replaceEntityObjectWithLink(value, fieldSchema);
+          }
         }
       }
     }
@@ -56,7 +58,10 @@ export function replaceEntityObjectWithLink(
   return newFormData;
 }
 
-export function getFilledSchema(obj: JsonObject, valuesSchema: JsonObject): JsonObject {
+export function getFilledSchema(
+  obj: JsonObject,
+  valuesSchema: JsonObject,
+): JsonObject {
   const filledSchema = { ...valuesSchema };
 
   for (const key in filledSchema) {

@@ -60,21 +60,20 @@ export interface ScaffolderUseTemplateFormState {
  * passed to the Scaffolder backend.
  * @public
  */
-export const useTemplateFormState = (): ScaffolderUseTemplateFormState | null => {
+export const useTemplateFormState = (): ScaffolderUseTemplateFormState => {
   const value = useContext(FormState)?.atVersion(1);
 
-  if (!value) {
-    return null;
-  }
-
-  const { setFormState: updateFormState, formState = {} } = value;
+  const { setFormState: updateFormState, formState = {} } = value || {};
 
   const setFormState = useCallback(
     (input: JsonObject) => {
-      updateFormState(currentFormState => ({ ...currentFormState, ...input }));
+      updateFormState?.(currentFormState => ({
+        ...currentFormState,
+        ...input,
+      }));
     },
     [updateFormState],
   );
 
-  return { setFormState, formState };
+  return { setFormState, formState: formState || {} };
 };

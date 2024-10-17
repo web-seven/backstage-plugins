@@ -50,7 +50,9 @@ export const EditEntityByTemplatePageContext = (
   const navigate = useNavigate();
 
   const templateFormState = useTemplateFormState();
-  const { formState } = templateFormState ? templateFormState : { formState: null };
+  const { formState } = templateFormState
+    ? templateFormState
+    : { formState: null };
 
   const FORMDATA_ANNOTATION_PATH = 'backstage.io/edit-data';
 
@@ -61,11 +63,12 @@ export const EditEntityByTemplatePageContext = (
   useEffect(() => {
     if (window.location.search !== '') {
       const query = qs.parse(window.location.search, {
-          ignoreQueryPrefix: true,
-        }),
-        entityKind = query.kind as string,
-        entityNamespace = query.namespace as string,
-        entityName = query.name as string;
+        ignoreQueryPrefix: true,
+      });
+
+      const entityKind = query.kind as string;
+      const entityNamespace = query.namespace as string;
+      const entityName = query.name as string;
 
       if (entityKind && entityNamespace && entityName) {
         const entityRef = stringifyEntityRef({
@@ -85,7 +88,7 @@ export const EditEntityByTemplatePageContext = (
         })();
       }
     }
-  }, []);
+  }, [catalogApi]);
 
   const { t } = useTranslationRef(scaffolderExtensionsTranslationRef);
 
@@ -99,9 +102,14 @@ export const EditEntityByTemplatePageContext = (
     name: templateName,
   });
 
-  const onCreate = async (values: Record<string, JsonValue>) => {    
-    if(formState) {
-      values = {...values, _editData: btoa(JSON.stringify({...values, formState }))};
+  const onCreate = async (initialValues: Record<string, JsonValue>) => {
+    let values = { ...initialValues };
+
+    if (formState) {
+      values = {
+        ...values,
+        _editData: btoa(JSON.stringify({ ...values, formState })),
+      };
     }
 
     const { taskId } = await scaffolderApi.scaffold({
@@ -109,6 +117,7 @@ export const EditEntityByTemplatePageContext = (
       values,
       secrets,
     });
+
     navigate(taskRoute({ taskId }));
   };
 

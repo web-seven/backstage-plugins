@@ -1,1 +1,1 @@
-export { AdditionalPicker } from './AdditionalPicker'
+export { AdditionalPicker } from './AdditionalPicker';

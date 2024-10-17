@@ -18,7 +18,7 @@ import FormControl from '@material-ui/core/FormControl';
 import Autocomplete, {
   createFilterOptions,
 } from '@material-ui/lab/Autocomplete';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import useAsync from 'react-use/esm/useAsync';
 import {
   EntityValuePickerFilterQueryValue,
@@ -29,8 +29,6 @@ import {
 import { VirtualizedListbox } from '../../fieldsRelated/VirtualizedListBox';
 import { EntityDisplayName } from '../../fieldsRelated/EntityDisplayName';
 import { JsonObject, JsonValue, JsonArray } from '@backstage/types';
-export { EntityValuePickerSchema } from './schema';
-
 import nunjucks from 'nunjucks';
 import { getFilledSchema, getValueByPath } from '../../../utils';
 import { AdditionalPicker } from '../../fieldsRelated/AdditionalPicker';
@@ -71,16 +69,20 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
   const [additionalInputs, setAdditionalInputs] = useState<React.ReactNode[]>(
     [],
   );
-  const aggregatedProperties = useRef<JsonObject>({}),
-    inputsState = useRef<FormState>({ additionalValues: {}, entityName: '' });
+  const aggregatedProperties = useRef<JsonObject>({});
+  const inputsState = useRef<FormState>({
+    additionalValues: {},
+    entityName: '',
+  });
 
   const valuePath: string | undefined = uiSchema['ui:options']?.valuePath;
 
-  const valuesSchema: JsonObject =
-    typeof uiSchema['ui:options']?.valuesSchema == 'object' &&
-    uiSchema['ui:options']?.valuesSchema
+  const valuesSchema: JsonObject = useMemo(() => {
+    return typeof uiSchema['ui:options']?.valuesSchema === 'object' &&
+      uiSchema['ui:options']?.valuesSchema
       ? uiSchema['ui:options']?.valuesSchema
       : {};
+  }, [uiSchema]);
 
   const valueTemplate = uiSchema['ui:options']?.template as string;
 
@@ -122,16 +124,18 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
     keys: string[],
     value: JsonValue | undefined,
   ) {
+    let current = target;
+
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i];
-      if (typeof target[key] !== 'object' || target[key] === null) {
-        target[key] = {};
+      if (typeof current[key] !== 'object' || current[key] === null) {
+        current[key] = {};
       }
-      target = target[key] as JsonObject;
+      current = current[key] as JsonObject;
     }
 
     const finalKey = keys[keys.length - 1];
-    target[finalKey] =
+    current[finalKey] =
       typeof value === 'object' && value !== null && !Array.isArray(value)
         ? { ...value }
         : value;
@@ -139,12 +143,14 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
 
   function setInputStateValue(keys: string[], value: JsonValue | undefined) {
     setTargetValue(inputsState.current.additionalValues, keys, value);
-    setFormState &&
+
+    if (setFormState) {
       setFormState({
         [name]: {
           ...inputsState.current,
         },
       });
+    }
   }
 
   function setAggregatedPropertiesValue(
@@ -157,40 +163,103 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
     );
   }
 
-  const onEntitySelect = useCallback(
-    (_: any, ref: Entity | null) => {
-      if (ref) {
-        inputsState.current = {
-          entityName: ref.metadata.name,
-          additionalValues: {},
-        };
-        if (valuePath) {
-          const valueByPath =
-            typeof getValueByPath(ref, valuePath) === 'string'
-              ? getValueByPath(ref, valuePath)
-              : JSON.stringify(getValueByPath(ref, valuePath));
+  function renderAdditionalInputs(entity: Entity | null) {
+    const newAdditionalInputs: React.ReactNode[] = [];
 
-          entityChange(valueByPath);
-        } else {
-          setFormState &&
-            setFormState({
-              [name]: {
-                ...inputsState.current,
-              },
-            });
-          entityChange(
-            nunjucks.renderString(valueTemplate, aggregatedProperties.current),
-          );
-          renderAdditionalInputs(ref);
+    if (entity) {
+      const entityValues = getFilledSchema(entity, valuesSchema);
+
+      for (const key in entityValues) {
+        if (entityValues.hasOwnProperty(key)) {
+          aggregatedProperties.current = {
+            ...aggregatedProperties.current,
+            [key]: entityValues[key],
+          };
+
+          const currentEntityValue = entityValues[key];
+          let initialValue = null;
+          if (inputsState.current.additionalValues) {
+            initialValue = inputsState.current.additionalValues[key] ?? null;
+          }
+
+          if (Array.isArray(currentEntityValue)) {
+            newAdditionalInputs.push(
+              <AdditionalPicker
+                key={key}
+                options={currentEntityValue as JsonArray}
+                label={key}
+                setInputStateValue={setInputStateValue}
+                setAggregatedPropertiesValue={setAggregatedPropertiesValue}
+                keys={[key]}
+                initialValue={initialValue}
+              />,
+            );
+          } else if (
+            currentEntityValue &&
+            typeof currentEntityValue === 'object'
+          ) {
+            const optionLabel =
+              typeof (currentEntityValue as any)?.optionLabel === 'string'
+                ? (currentEntityValue as any)?.optionLabel
+                : undefined;
+
+            if (Array.isArray((currentEntityValue as any)?.value)) {
+              newAdditionalInputs.push(
+                <AdditionalPicker
+                  key={key}
+                  options={(currentEntityValue as any)?.value as JsonArray}
+                  label={key}
+                  optionLabel={optionLabel}
+                  properties={(currentEntityValue as any)?.properties}
+                  setInputStateValue={setInputStateValue}
+                  setAggregatedPropertiesValue={setAggregatedPropertiesValue}
+                  keys={[key]}
+                  initialValue={initialValue}
+                />,
+              );
+            }
+          }
         }
-      } else {
-        renderAdditionalInputs(null);
       }
-      setAutocompleteValue(ref);
-    },
-    [entityChange],
-  );
+    } else {
+      aggregatedProperties.current = {};
+    }
 
+    setAdditionalInputs(newAdditionalInputs);
+  }
+
+  function onEntitySelect(_: any, ref: Entity | null) {
+    if (ref) {
+      inputsState.current = {
+        entityName: ref.metadata.name,
+        additionalValues: {},
+      };
+      if (valuePath) {
+        const valueByPath =
+          typeof getValueByPath(ref, valuePath) === 'string'
+            ? getValueByPath(ref, valuePath)
+            : JSON.stringify(getValueByPath(ref, valuePath));
+
+        entityChange(valueByPath);
+      } else {
+        if (setFormState) {
+          setFormState({
+            [name]: {
+              ...inputsState.current,
+            },
+          });
+        }
+        entityChange(
+          nunjucks.renderString(valueTemplate, aggregatedProperties.current),
+        );
+        renderAdditionalInputs(ref);
+      }
+    } else {
+      renderAdditionalInputs(null);
+    }
+    setAutocompleteValue(ref);
+  }
+  /* eslint-disable */
   useEffect(() => {
     const initialFormState: FormState =
       props.formContext.formData.formState?.[name];
@@ -226,7 +295,8 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
 
       renderAdditionalInputs(initialEntity);
     }
-  }, [entities]);
+  }, [entities, name, valuePath, valueTemplate]);
+  /* eslint-enable */
 
   function getEntityOptionLabel(ref: Entity | CompoundEntityRef) {
     if (ref) {
@@ -238,68 +308,6 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
       ] as string;
     }
     return '';
-  }
-
-  function renderAdditionalInputs(entity: Entity | null) {
-    let additionalInputs: React.ReactNode[] = [];
-
-    if (entity) {
-      const entityValues = getFilledSchema(entity, valuesSchema);
-
-      for (const key in entityValues) {
-        aggregatedProperties.current = {
-          ...aggregatedProperties.current,
-          [key]: entityValues[key],
-        };
-
-        const currentEntityValue = entityValues[key];
-        let initialValue = null;
-        if (inputsState.current.additionalValues) {
-          initialValue = inputsState.current.additionalValues[key] ?? null;
-        }
-
-        if (Array.isArray(currentEntityValue)) {
-          additionalInputs.push(
-            <AdditionalPicker
-              key={key}
-              options={currentEntityValue as JsonArray}
-              label={key}
-              setInputStateValue={setInputStateValue}
-              setAggregatedPropertiesValue={setAggregatedPropertiesValue}
-              keys={[key]}
-              initialValue={initialValue}
-            />,
-          );
-        } else if (
-          currentEntityValue &&
-          typeof currentEntityValue === 'object'
-        ) {
-          const optionLabel =
-            typeof (currentEntityValue as any)?.optionLabel === 'string'
-              ? (currentEntityValue as any)?.optionLabel
-              : undefined;
-
-          if (Array.isArray((currentEntityValue as any)?.value)) {
-            additionalInputs.push(
-              <AdditionalPicker
-                key={key}
-                options={(currentEntityValue as any)?.value as JsonArray}
-                label={key}
-                optionLabel={optionLabel}
-                properties={(currentEntityValue as any)?.properties}
-                setInputStateValue={setInputStateValue}
-                setAggregatedPropertiesValue={setAggregatedPropertiesValue}
-                keys={[key]}
-                initialValue={initialValue}
-              />,
-            );
-          }
-        }
-      }
-    } else {
-      aggregatedProperties.current = {};
-    }
-    setAdditionalInputs(additionalInputs);
   }
 
   return (

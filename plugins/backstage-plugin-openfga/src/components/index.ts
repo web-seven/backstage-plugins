@@ -1,1 +1,1 @@
-export { TupleGrid } from './TupleGrid'
+export { TupleGrid } from './TupleGrid';

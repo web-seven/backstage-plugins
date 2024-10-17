@@ -40,19 +40,22 @@ export class PermissionCollector {
         if (axios.isAxiosError(error) && error.response?.status === 404) {
           this.logger.error(`URL not found for plugin: ${plugin}, URL: ${url}`);
         } else {
-          this.logger.error(`Error fetching permissions for plugin: ${plugin}, URL: ${url}`);
+          this.logger.error(
+            `Error fetching permissions for plugin: ${plugin}, URL: ${url}`,
+          );
         }
       }
     }
 
     if (permissions.length > 0) {
       return this.changeArrayStructure(permissions);
-    } else {
-      return {};
     }
+    return {};
   }
 
-  private changeArrayStructure<T extends { name: string }>(permissions: Array<T>): { [name: string]: string[] } {
+  private changeArrayStructure<T extends { name: string }>(
+    permissions: Array<T>,
+  ): { [name: string]: string[] } {
     const permissionMap: { [name: string]: string[] } = {};
 
     permissions.forEach((permission: any) => {
@@ -79,7 +82,8 @@ export class PermissionCollector {
 
   private permissionsPaths() {
     const baseurl = this.config.getOptionalString('backend.baseUrl') ?? '';
-    const pluginsList = this.config.getOptionalStringArray('openfga.plugins') ?? [];
+    const pluginsList =
+      this.config.getOptionalStringArray('openfga.plugins') ?? [];
     const paths = [];
 
     for (const plugin of pluginsList) {

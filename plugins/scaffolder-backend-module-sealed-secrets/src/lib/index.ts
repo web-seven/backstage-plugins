@@ -1,1 +1,1 @@
-export * from './SealedSecret'
+export * from './SealedSecret';

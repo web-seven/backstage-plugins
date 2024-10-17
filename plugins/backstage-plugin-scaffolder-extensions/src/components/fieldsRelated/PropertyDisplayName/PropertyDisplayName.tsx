@@ -2,8 +2,8 @@ import React from 'react';
 import { Box, makeStyles } from '@material-ui/core';
 
 type PropertyDisplayNameProps = {
-  optionLabel: string
-}
+  optionLabel: string;
+};
 
 const useStyles = makeStyles({
   root: {
@@ -12,9 +12,9 @@ const useStyles = makeStyles({
   },
 });
 
-export const PropertyDisplayName = ( { optionLabel }: PropertyDisplayNameProps): JSX.Element => {
-
-
+export const PropertyDisplayName = ({
+  optionLabel,
+}: PropertyDisplayNameProps): JSX.Element => {
   const classes = useStyles();
 
   return (

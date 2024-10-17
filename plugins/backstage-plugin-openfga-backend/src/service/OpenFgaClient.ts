@@ -14,14 +14,14 @@ export class OpenFgaService {
     const authorizationToken = config.getString('openfga.token');
     this.openFgaClient = new OpenFgaClient({
       apiUrl,
-      storeId, 
+      storeId,
       credentials: {
         method: CredentialsMethod.ApiToken,
         config: {
-          token: authorizationToken, 
-        }
-      }
-     });
+          token: authorizationToken,
+        },
+      },
+    });
   }
 
   /**
@@ -32,17 +32,22 @@ export class OpenFgaService {
   public async createAuthorizationModel(model: any) {
     const oldModel = await this.readModel();
 
-    if (oldModel && (oldModel.authorization_model?.type_definitions ?? []).length > 0) {
+    if (
+      oldModel &&
+      (oldModel.authorization_model?.type_definitions ?? []).length > 0
+    ) {
       const types = oldModel.authorization_model?.type_definitions ?? [];
 
       for (const data in model) {
-        let type = this.findType(types, data);
-        if (type) {
-          this.updateTypeWithNewRelations(type, model[data]);
-          this.removeOldRelations(type, model[data]);  // Remove actions not in the new schema
-        } else {
-          const newType = this.generateCombinedActionTypes(data, model[data]);
-          types.push(newType);
+        if (model.hasOwnProperty(data)) {
+          const type = this.findType(types, data);
+          if (type) {
+            this.updateTypeWithNewRelations(type, model[data]);
+            this.removeOldRelations(type, model[data]);
+          } else {
+            const newType = this.generateCombinedActionTypes(data, model[data]);
+            types.push(newType);
+          }
         }
       }
 
@@ -51,13 +56,13 @@ export class OpenFgaService {
       }
 
       if (oldModel.authorization_model) {
-        return await this.openFgaClient.writeAuthorizationModel(oldModel.authorization_model);
-      } else {
-        throw new Error('Authorization model is undefined');
+        return await this.openFgaClient.writeAuthorizationModel(
+          oldModel.authorization_model,
+        );
       }
-    } else {
-      return this.createNewModel(model);
+      throw new Error('Authorization model is undefined');
     }
+    return this.createNewModel(model);
   }
 
   /**
@@ -78,10 +83,10 @@ export class OpenFgaService {
   private updateTypeWithNewRelations(type: any, newActions: string[]) {
     const relations = type.relations ?? {};
     const metadataRelations = type.metadata?.relations ?? {};
-    
+
     newActions.forEach(action => {
       if (!relations[action]) {
-        relations[action] = { "this": {} };
+        relations[action] = { this: {} };
         metadataRelations[action] = this.generateMetadataRelation();
       }
     });
@@ -94,7 +99,7 @@ export class OpenFgaService {
    */
   private removeOldRelations(type: any, newActions: string[]) {
     const existingActions = Object.keys(type.relations ?? {});
-    
+
     existingActions.forEach(action => {
       if (!newActions.includes(action)) {
         delete type.relations[action];
@@ -118,20 +123,25 @@ export class OpenFgaService {
    * @returns The newly created authorization model from OpenFGA.
    */
   private async createNewModel(model: any) {
-    const newModel: { schema_version: string; type_definitions: TypeDefinition[] } = {
+    const newModel: {
+      schema_version: string;
+      type_definitions: TypeDefinition[];
+    } = {
       schema_version: '1.1',
       type_definitions: [],
     };
 
     for (const data in model) {
-      const newType = this.generateCombinedActionTypes(data, model[data]);
-      newModel.type_definitions.push(newType);
+      if (model.hasOwnProperty(data)) {
+        const newType = this.generateCombinedActionTypes(data, model[data]);
+        newModel.type_definitions.push(newType);
+      }
     }
 
     newModel.type_definitions.push({
-      type: "userGroup",
+      type: 'userGroup',
       relations: {},
-      metadata: undefined
+      metadata: undefined,
     });
 
     return await this.openFgaClient.writeAuthorizationModel(newModel);
@@ -143,12 +153,15 @@ export class OpenFgaService {
    * @param typeActions - Array of actions associated with the type.
    * @returns A new TypeDefinition object containing the type, relations, and metadata.
    */
-  private generateCombinedActionTypes(typeName: string, typeActions: string[]): TypeDefinition {
+  private generateCombinedActionTypes(
+    typeName: string,
+    typeActions: string[],
+  ): TypeDefinition {
     const relations: Record<string, object> = {};
     const metadataRelations: Record<string, object> = {};
 
     typeActions.forEach(action => {
-      relations[action] = { "this": {} };
+      relations[action] = { this: {} };
       metadataRelations[action] = this.generateMetadataRelation();
     });
 
@@ -157,9 +170,9 @@ export class OpenFgaService {
       relations,
       metadata: {
         relations: metadataRelations,
-        module: "",
-        source_info: undefined
-      }
+        module: '',
+        source_info: undefined,
+      },
     };
   }
 
@@ -169,14 +182,14 @@ export class OpenFgaService {
    */
   private generateMetadataRelation() {
     return {
-      "directly_related_user_types": [
+      directly_related_user_types: [
         {
-          "type": "userGroup",
-          "condition": ""
-        }
+          type: 'userGroup',
+          condition: '',
+        },
       ],
-      "module": "",
-      "source_info": null
+      module: '',
+      source_info: null,
     };
   }
 }
