@@ -105,4 +105,7 @@ catalog:
     #     - allow: [User, Group]
 
 openfga:
-  baseUrl: /:scope/guest-mock.json
+  baseUrl: /:base-url/model/:scope/:name
+  token: ${OPENFGA_AUTH_TOKEN}
+  host: ${OPENFGA_HOST}
+  storeId: ${OPENFGA_STORE_ID}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   DataGrid,
   GridCellEditCommitParams,
+  GridCellParams,
   GridColDef,
   GridToolbarContainer,
   GridToolbarFilterButton,
@@ -14,27 +15,27 @@ import {
   useApi,
   useRouteRefParams,
 } from '@backstage/core-plugin-api';
-import { TupleGridData } from '@web-seven/backstage-plugin-openfga-common';
-import { openFgaApiRef } from '../../api';
+import { Relations } from '@web-seven/backstage-plugin-openfga-backend';
+import { openfgaApiRef } from '../../api';
 
 const useStyles = makeStyles(theme => ({
   backButton: {
     marginTop: theme.spacing(2),
     float: 'right',
   },
+  disabledCell: {
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    cursor: 'not-allowed',
+  },
 }));
 
 export const TupleGrid = (): JSX.Element => {
   const styles = useStyles();
-  const { kind, name } = useRouteRefParams(entityRouteRef);
-  const scope = `${kind}:${name}`;
-  const openFgaApi = useApi(openFgaApiRef);
-  const [data, setData] = useState<TupleGridData>({
-    resources: [],
-    roles: [],
-    relations: {},
-  });
+  const { kind: scope, name } = useRouteRefParams(entityRouteRef);
+  const openfgaApi = useApi(openfgaApiRef);
   const alertApi = useApi(alertApiRef);
+  const [initialRelations, setInitialRelations] = useState<Relations>({});
+  const [changedRelations, setChangedRelations] = useState<Relations>({});
 
   const [columns, setColumns] = useState<GridColDef[]>([
     {
@@ -50,13 +51,12 @@ export const TupleGrid = (): JSX.Element => {
 
   useEffect(() => {
     const getData = async () => {
-      openFgaApi
-        .getScopeRelations(scope)
+      openfgaApi
+        .getScopeRelations(scope, name)
         .then(res => {
           if (!res) {
             return;
           }
-          setData(res);
 
           const roles = res.roles;
           if (Array.isArray(roles)) {
@@ -72,22 +72,13 @@ export const TupleGrid = (): JSX.Element => {
           const resources = res.resources;
           const relations = res.relations;
           if (Array.isArray(resources)) {
-            const rowRelations: JsonObject = Object.entries(
-              relations,
-            ).reduce((acc: JsonObject, [resource, roles]) => {
-              acc[resource] = {};
-              roles.forEach(role => {
-                (acc[resource] as JsonObject)[role] = true;
-              });
-              return acc;
-            }, {});
-
             const newRows = resources.map(resource => ({
               id: resource,
               resource: resource,
-              ...rowRelations[resource] as JsonObject,
+              ...(relations[resource] || {}),
             }));
             setRows(newRows);
+            setInitialRelations(relations);
           }
         })
         .catch(() => {
@@ -99,48 +90,69 @@ export const TupleGrid = (): JSX.Element => {
     };
 
     getData();
-  }, [openFgaApi, scope, alertApi]);
+  }, [openfgaApi, scope, name, alertApi]);
 
   const handleCellEditCommit = (params: GridCellEditCommitParams) => {
     const { id, field, value } = params;
 
     setRows(prevRows =>
       prevRows.map(row =>
-        row.id === id
-          ? { ...row, [field]: value as boolean }
-          : row
-      )
+        row.id === id ? { ...row, [field]: value as boolean } : row,
+      ),
     );
-  
-    setData(prevData => {
-      const newRelations = { ...prevData.relations };
-  
-      if (value) {
-        if (!newRelations[id]) {
-          newRelations[id] = [];
+
+    setChangedRelations(prevChangedRelations => {
+      const newChangedRelations = { ...prevChangedRelations };
+
+      const initialValue = initialRelations[id]?.[field];
+      if (initialValue !== value) {
+        if (!newChangedRelations[id]) {
+          newChangedRelations[id] = {};
         }
-        if (!newRelations[id].includes(field)) {
-          newRelations[id].push(field);
-        }
-      } else {
-        if (newRelations[id]) {
-          newRelations[id] = newRelations[id].filter(
-            (role: string) => role !== field,
-          );
+        newChangedRelations[id][field] = value as boolean;
+      } else if (newChangedRelations[id]) {
+        delete newChangedRelations[id][field];
+        if (Object.keys(newChangedRelations[id]).length === 0) {
+          delete newChangedRelations[id];
         }
       }
-  
-      return {
-        ...prevData,
-        relations: newRelations,
-      };
+
+      return newChangedRelations;
     });
-  
+
     setDisableButton(false);
   };
 
-  const handleGetAllData = () => {
-    openFgaApi.setScopeRelations(scope, data.relations);
+  const handleSetScopeRelations = async () => {
+    await openfgaApi.setScopeRelations(scope, name, changedRelations);
+
+    setInitialRelations(prevInitialRelations => {
+      const newInitialRelations = { ...prevInitialRelations };
+
+      Object.entries(changedRelations).forEach(([resource, relations]) => {
+        if (!newInitialRelations[resource]) {
+          newInitialRelations[resource] = {};
+        }
+
+        Object.entries(relations).forEach(([relation, value]) => {
+          newInitialRelations[resource][relation] = value;
+        });
+      });
+
+      return newInitialRelations;
+    });
+
+    setChangedRelations({});
+    setDisableButton(true);
+  };
+
+  const handleCellClick = (params: GridCellParams) => {
+    if (!params.row.hasOwnProperty(params.field)) {
+      alertApi.post({
+        message: `${params.field} ${params.row.resource} is not allowed for ${name} ${scope}`,
+        severity: 'info',
+      });
+    }
   };
 
   function CustomToolbar(props: any) {
@@ -159,9 +171,18 @@ export const TupleGrid = (): JSX.Element => {
           rows={rows}
           components={{ Toolbar: CustomToolbar }}
           onCellEditCommit={handleCellEditCommit}
+          isCellEditable={params => {
+            return params.row.hasOwnProperty(params.field);
+          }}
+          getCellClassName={params => {
+            return !params.row.hasOwnProperty(params.field)
+              ? styles.disabledCell
+              : '';
+          }}
+          onCellClick={handleCellClick}
         />
         <Button
-          onClick={handleGetAllData}
+          onClick={handleSetScopeRelations}
           variant="contained"
           color="primary"
           className={styles.backButton}
