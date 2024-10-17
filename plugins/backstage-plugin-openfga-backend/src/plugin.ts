@@ -10,7 +10,7 @@ import { createRouter } from './service/router';
  * @public
  */
 export const openfgaPlugin = createBackendPlugin({
-  pluginId: 'openfga',
+  pluginId: 'openfga-backend',
   register(env) {
     env.registerInit({
       deps: {

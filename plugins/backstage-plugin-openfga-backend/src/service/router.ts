@@ -3,7 +3,7 @@ import { OpenfgaRoutesService } from '../OpenfgaRoutesService';
 import { RouterOptions } from '../types';
 import express from 'express';
 import Router from 'express-promise-router'
-import {collectPermissions} from '../permissions/permissionsCollector'
+import {PermissionCollector} from '../permissions/permissionsCollector'
 import {OpenFgaService} from './openfgaClient'
 
 
@@ -17,14 +17,16 @@ export async function createRouter(
   router.use(express.json());
  
   router.get('/extract-permissions', async (_, response) => {
-    const permissions = await collectPermissions(config, logger, auth);
+    const permissionCollector = new PermissionCollector(config, logger, auth);
+    const permissions = await permissionCollector.collectPermissions();
     response.json({ data: permissions });
   });
 
   router.get('/create-authorization-model', async (_, response) => {
-    const permitionList = await collectPermissions(config, logger, auth);
+    const permissionCollector = new PermissionCollector(config, logger, auth);
+    const permissions = await permissionCollector.collectPermissions();
     const openFgaService = new OpenFgaService(config);
-    const model = await openFgaService.createAuthorizationModel(permitionList);
+    const model = await openFgaService.createAuthorizationModel(permissions);
 
     response.json({ data: model });
   });

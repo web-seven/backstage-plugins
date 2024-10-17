@@ -9,7 +9,7 @@ export class OpenFgaService {
    * @param config - Backstage configuration object to retrieve OpenFGA connection details.
    */
   constructor(config: Config) {
-    const apiUrl = config.getString('openfga.baseUrl');
+    const apiUrl = config.getString('openfga.host');
     const storeId = config.getString('openfga.storeId');
     const authorizationToken = config.getString('openfga.token');
     this.openFgaClient = new OpenFgaClient({
