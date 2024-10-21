@@ -1,10 +1,10 @@
-import SealedSecret from '../src/lib/SealedSecret'
-import { SealedSecretsServiceImpl } from  '../src/service/SealedSecretsService'
+import SealedSecret from '../src/lib/SealedSecret';
+import { SealedSecretsServiceImpl } from '../src/service/SealedSecretsService';
 
-const sealedSecrets = new SealedSecretsServiceImpl()
-sealedSecrets.getPublicKey().then(publicKey=>{
-  if(publicKey) {
-    const sealedSecret = new SealedSecret(publicKey, "test string", "")
+const sealedSecrets = new SealedSecretsServiceImpl();
+sealedSecrets.getPublicKey().then(publicKey => {
+  if (publicKey) {
+    const sealedSecret = new SealedSecret(publicKey, 'test string', '');
     console.log(`
 apiVersion: bitnami.com/v1alpha1
 kind: SealedSecret
@@ -16,6 +16,6 @@ metadata:
 spec:
   encryptedData:
     foo: "${sealedSecret.sealSecret()}"
-`)
+`);
   }
-})
+});

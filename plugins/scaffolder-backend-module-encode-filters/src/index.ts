@@ -1,1 +1,1 @@
-export { encodeFilters } from './module';
+export { encodeFilters as default } from './module';

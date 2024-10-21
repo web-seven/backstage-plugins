@@ -54,15 +54,21 @@ export const EntityValuePickerFieldSchema = makeFieldSchemaFromZod(
     valuesSchema: z
       .record(z.any())
       .optional()
-      .describe('Scheme that describes which entity properties we must use to create object used by template option.'),
+      .describe(
+        'Scheme that describes which entity properties we must use to create object used by template option.',
+      ),
     template: z
       .string()
       .optional()
-      .describe('Nunjucks template that uses selected values from entity and set the final value of the EntityValuePicker'),
+      .describe(
+        'Nunjucks template that uses selected values from entity and set the final value of the EntityValuePicker',
+      ),
     labelVariant: z
       .string()
       .optional()
-      .describe('Variant of displaying options labels (entityRef, primaryTitle, secondaryTitle)'),
+      .describe(
+        'Variant of displaying options labels (entityRef, primaryTitle, secondaryTitle)',
+      ),
   }),
 );
 
@@ -84,4 +90,4 @@ export type EntityValuePickerFilterQuery = z.TypeOf<
 >;
 
 export type EntityValuePickerFilterQueryValue =
-EntityValuePickerFilterQuery[keyof EntityValuePickerFilterQuery];
+  EntityValuePickerFilterQuery[keyof EntityValuePickerFilterQuery];

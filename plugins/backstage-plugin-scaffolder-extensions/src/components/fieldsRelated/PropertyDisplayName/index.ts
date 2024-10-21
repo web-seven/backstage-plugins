@@ -1,1 +1,1 @@
-export { PropertyDisplayName } from './PropertyDisplayName'
+export { PropertyDisplayName } from './PropertyDisplayName';

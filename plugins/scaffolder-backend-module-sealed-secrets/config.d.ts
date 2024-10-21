@@ -9,7 +9,7 @@ export interface Config {
        * Public key for seal secrets
        * @visibility backend
        */
-      publicKey:  string | undefined
-    }
-  }
+      publicKey: string | undefined;
+    };
+  };
 }
