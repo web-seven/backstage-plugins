@@ -1,14 +1,23 @@
 import { CredentialsMethod, OpenFgaClient, TypeDefinition } from '@openfga/sdk';
 import { Config } from '@backstage/config';
+import { LoggerService } from '@backstage/backend-plugin-api';
+import { AuthService } from '@backstage/backend-plugin-api';
+import { PermissionCollector } from '../permissions/PermissionCollector';
 
 export class OpenFgaService {
   private openFgaClient: OpenFgaClient;
-
+  private config: Config;
+  private logger: LoggerService;
+  private auth: AuthService;
+  readonly user_type = 'group';
   /**
    * Constructor initializes the OpenFgaClient with API URL, store ID, and authorization token from config.
    * @param config - Backstage configuration object to retrieve OpenFGA connection details.
    */
-  constructor(config: Config) {
+  constructor(config: Config, logger: LoggerService, auth: AuthService) {
+    this.config = config;
+    this.logger = logger;
+    this.auth = auth;
     const apiUrl = config.getString('openfga.host');
     const storeId = config.getString('openfga.storeId');
     const authorizationToken = config.getString('openfga.token');
@@ -26,10 +35,16 @@ export class OpenFgaService {
 
   /**
    * Creates or updates the authorization model by comparing the new model with the existing one.
-   * @param model - New authorization model with actions and types to apply.
    * @returns The updated authorization model from OpenFGA.
    */
-  public async createAuthorizationModel(model: any) {
+  public async createAuthorizationModel() {
+    const permissionCollector = new PermissionCollector(
+      this.config,
+      this.logger,
+      this.auth,
+    );
+    const model = await permissionCollector.collectPermissions();
+
     const oldModel = await this.readModel();
 
     if (
@@ -139,7 +154,7 @@ export class OpenFgaService {
     }
 
     newModel.type_definitions.push({
-      type: 'userGroup',
+      type: this.user_type,
       relations: {},
       metadata: undefined,
     });
@@ -178,13 +193,13 @@ export class OpenFgaService {
 
   /**
    * Generates a default metadata relation object for actions.
-   * @returns A metadata object defining the relationship to a "userGroup".
+   * @returns A metadata object defining the relationship to a "group".
    */
   private generateMetadataRelation() {
     return {
       directly_related_user_types: [
         {
-          type: 'userGroup',
+          type: this.user_type,
           condition: '',
         },
       ],
