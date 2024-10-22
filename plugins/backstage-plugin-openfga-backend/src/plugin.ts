@@ -3,6 +3,7 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 import { createRouter } from './service/router';
+import { OpenFgaService } from './service/OpenFgaClient';
 
 /**
  * openfgaPlugin backend plugin
@@ -22,6 +23,8 @@ export const openfgaPlugin = createBackendPlugin({
       async init({ httpRouter, logger, config, auth }) {
         const router = await createRouter({ logger, config, auth });
         httpRouter.use(router);
+        const openFgaService = new OpenFgaService(config, logger, auth);
+        await openFgaService.createAuthorizationModel();
       },
     });
   },
