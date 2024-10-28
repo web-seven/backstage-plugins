@@ -43,6 +43,7 @@
     "@backstage/plugin-search-backend-module-techdocs": "^0.1.27",
     "@backstage/plugin-search-backend-node": "^1.2.27",
     "@backstage/plugin-techdocs-backend": "^1.10.9",
+    "@web-seven/backstage-plugin-crossplane-scaffolder": "^0.1.0",
     "@web-seven/backstage-plugin-openfga-backend": "^0.1.0",
     "@web-seven/backstage-plugin-scaffolder-backend-module-encode-filters": "^0.0.2",
     "@web-seven/backstage-plugin-scaffolder-backend-module-sealed-secrets": "^0.1.0",

@@ -52,5 +52,5 @@ backend.add(
 );
 
 backend.add(import('@web-seven/backstage-plugin-openfga-backend'));
-
+backend.add(import('@web-seven/backstage-plugin-crossplane-scaffolder'));
 backend.start();
