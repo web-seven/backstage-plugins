@@ -6,7 +6,6 @@ import {
   catalogServiceRef,
   catalogProcessingExtensionPoint,
 } from '@backstage/plugin-catalog-node/alpha';
-import { XrdDataProvider } from './provider/XrdDataProvider';
 import { XRDTemplateEntityProvider } from './provider/EntityProvider';
 
 export const catalogModuleCrossplane = createBackendModule({
@@ -36,19 +35,21 @@ export const catalogModuleCrossplane = createBackendModule({
         auth,
         scheduler,
       }) {
-        const frequencySeconds = config.getOptionalNumber(
-          'crossplaneScaffolder.taskRunner.frequency.seconds',
-        );
-        const timeoutSeconds = config.getOptionalNumber(
-          'crossplaneScaffolder.taskRunner.timeout.seconds',
-        );
-
         const taskRunner = scheduler.createScheduledTaskRunner({
-          frequency: { seconds: frequencySeconds },
-          timeout: { seconds: timeoutSeconds },
+          frequency: {
+            seconds: config.getOptionalNumber(
+              'crossplaneScaffolder.taskRunner.frequency',
+            ),
+          },
+          timeout: {
+            seconds: config.getOptionalNumber(
+              'crossplaneScaffolder.taskRunner.timeout',
+            ),
+          },
         });
 
-        const templateDataProvider = new XrdDataProvider(
+        const templateEntityProvider = new XRDTemplateEntityProvider(
+          taskRunner,
           logger,
           config,
           catalogApi,
@@ -56,11 +57,6 @@ export const catalogModuleCrossplane = createBackendModule({
           permissions,
           auth,
           httpAuth,
-        );
-
-        const templateEntityProvider = new XRDTemplateEntityProvider(
-          taskRunner,
-          templateDataProvider,
         );
 
         await catalog.addEntityProvider(templateEntityProvider);

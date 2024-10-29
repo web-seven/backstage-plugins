@@ -117,10 +117,8 @@ openfga:
 
 crossplaneScaffolder:
   taskRunner:
-    frequency:
-      seconds: ${CROSSPLANE_TASK_RUNNER_FREQUENCY_SECONDS}
-    timeout:
-      seconds: ${CROSSPLANE_TASK_RUNNER_TIMEOUT_SECONDS}
+    frequency: ${CROSSPLANE_TASK_RUNNER_FREQUENCY}
+    timeout: ${CROSSPLANE_TASK_RUNNER_TIMEOUT}
 
 kubernetes:
   serviceLocatorMethod:

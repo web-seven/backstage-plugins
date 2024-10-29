@@ -6,18 +6,45 @@ import { Entity } from '@backstage/catalog-model';
 import { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
 import { XrdDataProvider } from './XrdDataProvider';
 import yaml from 'js-yaml';
+import { CatalogApi } from '@backstage/catalog-client';
+import { PermissionEvaluator } from '@backstage/plugin-permission-common';
+import { Config } from '@backstage/config';
+import {
+  LoggerService,
+  DiscoveryService,
+  HttpAuthService,
+  AuthService,
+} from '@backstage/backend-plugin-api';
 
 export class XRDTemplateEntityProvider implements EntityProvider {
   private readonly taskRunner: SchedulerServiceTaskRunner;
-  private templateDataProvider: XrdDataProvider;
   private connection?: EntityProviderConnection;
+  logger: LoggerService;
+  config: Config;
+  catalogApi: CatalogApi;
+  permissions: PermissionEvaluator;
+  discovery: DiscoveryService;
+  auth: AuthService;
+  httpAuth: HttpAuthService;
 
   constructor(
     taskRunner: SchedulerServiceTaskRunner,
-    templateDataProvider: XrdDataProvider,
+    logger: LoggerService,
+    config: Config,
+    catalogApi: CatalogApi,
+    discovery: DiscoveryService,
+    permissions: PermissionEvaluator,
+    auth: AuthService,
+    httpAuth: HttpAuthService,
   ) {
     this.taskRunner = taskRunner;
-    this.templateDataProvider = templateDataProvider;
+    this.logger = logger;
+    this.config = config;
+    this.catalogApi = catalogApi;
+    this.permissions = permissions;
+    this.discovery = discovery;
+    this.auth = auth;
+    this.httpAuth = httpAuth;
   }
 
   getProviderName(): string {
@@ -38,7 +65,16 @@ export class XRDTemplateEntityProvider implements EntityProvider {
     if (!this.connection) {
       throw new Error('Connection not initialized');
     }
-    const xrdData = await this.templateDataProvider.fetchXRDObjects();
+    const templateDataProvider = new XrdDataProvider(
+      this.logger,
+      this.config,
+      this.catalogApi,
+      this.discovery,
+      this.permissions,
+      this.auth,
+      this.httpAuth,
+    );
+    const xrdData = await templateDataProvider.fetchXRDObjects();
     const entities = xrdData.map(xrd => this.translateXRDToTemplate(xrd));
 
     await this.connection.applyMutation({
@@ -71,7 +107,7 @@ export class XRDTemplateEntityProvider implements EntityProvider {
         },
       },
       spec: {
-        type: 'object',
+        type: xrd.metadata.name,
         parameters,
         steps,
       },
