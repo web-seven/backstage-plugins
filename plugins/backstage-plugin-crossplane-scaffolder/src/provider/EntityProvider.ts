@@ -65,73 +65,84 @@ export class XRDTemplateEntityProvider implements EntityProvider {
     if (!this.connection) {
       throw new Error('Connection not initialized');
     }
-    const templateDataProvider = new XrdDataProvider(
-      this.logger,
-      this.config,
-      this.catalogApi,
-      this.discovery,
-      this.permissions,
-      this.auth,
-      this.httpAuth,
-    );
-    const xrdData = await templateDataProvider.fetchXRDObjects();
-    const entities = xrdData.map(xrd => this.translateXRDToTemplate(xrd));
+    try {
+      const templateDataProvider = new XrdDataProvider(
+        this.logger,
+        this.config,
+        this.catalogApi,
+        this.discovery,
+        this.permissions,
+        this.auth,
+        this.httpAuth,
+      );
+      const xrdData = await templateDataProvider.fetchXRDObjects();
+      const entities = xrdData.flatMap(xrd =>
+        this.translateXRDVersionsToTemplates(xrd),
+      );
 
-    await this.connection.applyMutation({
-      type: 'full',
-      entities: entities.map(entity => ({
-        entity,
-        locationKey: `provider:${this.getProviderName()}`,
-      })),
-    });
+      await this.connection.applyMutation({
+        type: 'full',
+        entities: entities.map(entity => ({
+          entity,
+          locationKey: `provider:${this.getProviderName()}`,
+        })),
+      });
+    } catch (error) {
+      this.logger.error(`Failed to run XRDTemplateEntityProvider: ${error}`);
+    }
   }
 
-  private translateXRDToTemplate(xrd: any): Entity {
-    if (!xrd?.metadata || !xrd?.spec) {
+  private translateXRDVersionsToTemplates(xrd: any): Entity[] {
+    if (!xrd?.metadata || !xrd?.spec?.versions) {
       throw new Error('Invalid XRD object');
     }
 
-    const parameters = this.extractParameters(xrd.spec.versions);
-    const steps = this.extractSteps(xrd.spec.versions);
+    return xrd.spec.versions.map((version: { name: any }) => {
+      const parameters = this.extractParameters(version);
+      const steps = this.extractSteps(version);
 
-    return {
-      apiVersion: 'scaffolder.backstage.io/v1beta3',
-      kind: 'Template',
-      metadata: {
-        name: xrd.metadata.name || 'example-xrd-template',
-        title: `Template for ${xrd.metadata.name}`,
-        description: `A template to create a ${xrd.spec.group} instance using ${xrd.metadata.name}`,
-        annotations: {
-          'backstage.io/managed-by-location': `cluster origin: ${xrd.clusterName}`,
-          'backstage.io/managed-by-origin-location': `cluster origin: ${xrd.clusterName}`,
+      return {
+        apiVersion: 'scaffolder.backstage.io/v1beta3',
+        kind: 'Template',
+        metadata: {
+          name: `${xrd.metadata.name}-${version.name}`,
+          title: `Template for ${xrd.metadata.name}`,
+          description: `A template to create a ${xrd.spec.group} instance using ${xrd.metadata.name}`,
+          annotations: {
+            'backstage.io/managed-by-location': `cluster origin: ${xrd.clusterName}`,
+            'backstage.io/managed-by-origin-location': `cluster origin: ${xrd.clusterName}`,
+          },
         },
-      },
-      spec: {
-        type: xrd.metadata.name,
-        parameters,
-        steps,
-      },
-    };
+        spec: {
+          type: xrd.metadata.name,
+          parameters,
+          steps,
+        },
+      };
+    });
   }
 
-  private extractParameters(versions: any[]): any[] {
-    return versions.flatMap(version =>
-      version.schema?.openAPIV3Schema?.properties?.spec
-        ? [version.schema.openAPIV3Schema.properties.spec]
-        : [],
-    );
+  private extractParameters(version: any): any[] {
+    return version.schema?.openAPIV3Schema?.properties?.spec
+      ? [version.schema.openAPIV3Schema.properties.spec]
+      : [];
   }
 
-  private extractSteps(versions: any[]): any[] {
-    return versions.flatMap(version => {
-      const stepsYamlString =
-        version.schema?.openAPIV3Schema?.properties?.steps?.default;
-      if (!stepsYamlString) return [];
+  private extractSteps(version: any): any[] {
+    const stepsYamlString =
+      version.schema?.openAPIV3Schema?.properties?.steps?.default;
+    if (!stepsYamlString) return [];
 
+    try {
       const stepsYaml = stepsYamlString.substring(
         stepsYamlString.indexOf('|') + 1,
       );
       return yaml.load(stepsYaml) as any[];
-    });
+    } catch (error) {
+      this.logger.error(
+        `Failed to parse steps YAML for version ${version.name}: ${error}`,
+      );
+      return [];
+    }
   }
 }
