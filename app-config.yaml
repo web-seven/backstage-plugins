@@ -114,3 +114,20 @@ openfga:
   plugins:
     - catalog
     - scaffolder
+
+crossplaneScaffolder:
+  taskRunner:
+    frequency: ${CROSSPLANE_TASK_RUNNER_FREQUENCY}
+    timeout: ${CROSSPLANE_TASK_RUNNER_TIMEOUT}
+
+kubernetes:
+  serviceLocatorMethod:
+    type: 'multiTenant'
+  clusterLocatorMethods:
+    - type: 'config'
+      clusters:
+        - name: ${KUBERNETES_CLUSTER_NAME}
+          url: ${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}
+          authProvider: 'serviceAccount'
+          serviceAccountToken: ${KUBERNETES_SERVICE_ACCOUNT_TOKEN}
+          skipTLSVerify: true
