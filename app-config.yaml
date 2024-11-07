@@ -131,3 +131,6 @@ kubernetes:
           authProvider: 'serviceAccount'
           serviceAccountToken: ${KUBERNETES_SERVICE_ACCOUNT_TOKEN}
           skipTLSVerify: true
+
+permission:
+  enabled: true
