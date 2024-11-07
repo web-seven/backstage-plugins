@@ -24,9 +24,6 @@ backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 
 // permission plugin
 backend.add(import('@backstage/plugin-permission-backend/alpha'));
-backend.add(
-  import('@backstage/plugin-permission-backend-module-allow-all-policy'),
-);
 
 // search plugin
 backend.add(import('@backstage/plugin-search-backend/alpha'));
@@ -53,4 +50,6 @@ backend.add(
 
 backend.add(import('@web-seven/backstage-plugin-openfga-backend'));
 backend.add(import('@web-seven/backstage-plugin-crossplane-scaffolder'));
+backend.add(import('@web-seven/backstage-module-openfga'));
+
 backend.start();
