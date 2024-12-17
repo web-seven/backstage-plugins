@@ -40,6 +40,15 @@ valuesSchema:
         properties:
           id: id
           address: address
+  relations:
+    value: relations
+    optionLabel: type
+    properties:
+      type: type
+      targetRef: targetRef
+      kind: target.kind
+      name: target.name
+      namespace: target.namespace
 ```
 
 If the selected value from the template is an array, an additional picker will be rendered to select the final value from the array. If the value is an array of objects, `optionLable` is used to specify which property of the selected object will be the label for the rendered picker options. Additionally, you can choose which properties of the object will be selected with `properties`. `value` is the path to this array of objects.
@@ -55,7 +64,12 @@ template: "Entity Name: {{ name }} \n
   User id: {{ user.user_id }} \n
   User address street: {{ user.address.street }} \n
   Job id: {{ user.jobs.id }} \n
-  Job address: {{ user.jobs.address }} \n"
+  Job address: {{ user.jobs.address }} \n
+  Relations type: {{ relations.type }} \n
+  Relations Target Ref: {{ relations.targetRef }} \n
+  Relations kind: {{ relations.kind }} \n
+  Relations name: {{ relations.name }} \n
+  Relations namespace: {{ relations.namespace }}"
 ```
 
 ### EntityObjectPicker

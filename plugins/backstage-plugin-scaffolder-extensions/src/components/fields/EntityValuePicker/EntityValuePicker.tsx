@@ -249,10 +249,10 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
             },
           });
         }
+        renderAdditionalInputs(ref);
         entityChange(
           nunjucks.renderString(valueTemplate, aggregatedProperties.current),
         );
-        renderAdditionalInputs(ref);
       }
     } else {
       renderAdditionalInputs(null);
@@ -261,39 +261,40 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
   }
   /* eslint-disable */
   useEffect(() => {
-    const initialFormState: FormState =
-      props.formContext.formData.formState?.[name];
+    if (!loading && entities) {
+      const initialFormState: FormState =
+        props.formContext.formData.formState?.[name];
 
-    let initialEntity: Entity | null = null;
+      let initialEntity: Entity | null = null;
 
-    if (entities?.catalogEntities.length === 1) {
-      initialEntity = entities.catalogEntities[0];
-    } else {
-      inputsState.current =
-        formState && Object.keys(formState).length > 0 && formState?.[name]
-          ? (formState?.[name] as FormState)
-          : initialFormState;
+      if (entities?.catalogEntities.length === 1) {
+        initialEntity = entities.catalogEntities[0];
+      } else {
+        inputsState.current =
+          formState && Object.keys(formState).length > 0 && formState?.[name]
+            ? (formState?.[name] as FormState)
+            : initialFormState;
 
-      const entity = entities?.catalogEntities.find(
-        e => e.metadata.name === inputsState.current?.entityName,
-      );
-      initialEntity = entity ? entity : null;
-    }
-    setAutocompleteValue(initialEntity);
+        const entity = entities?.catalogEntities.find(
+          e => e.metadata.name === inputsState.current?.entityName,
+        );
+        initialEntity = entity ? entity : null;
+      }
+      setAutocompleteValue(initialEntity);
 
-    if (valuePath && initialEntity) {
-      const valueByPath =
-        typeof getValueByPath(initialEntity, valuePath) === 'string'
-          ? getValueByPath(initialEntity, valuePath)
-          : JSON.stringify(getValueByPath(initialEntity, valuePath));
-      entityChange(valueByPath);
-    } else if (!valuePath && initialEntity) {
-      entityChange(
-        nunjucks.renderString(valueTemplate, aggregatedProperties.current),
-      );
-      inputsState.current.entityName = initialEntity.metadata.name;
-
-      renderAdditionalInputs(initialEntity);
+      if (valuePath && initialEntity) {
+        const valueByPath =
+          typeof getValueByPath(initialEntity, valuePath) === 'string'
+            ? getValueByPath(initialEntity, valuePath)
+            : JSON.stringify(getValueByPath(initialEntity, valuePath));
+        entityChange(valueByPath);
+      } else if (!valuePath && initialEntity) {
+        renderAdditionalInputs(initialEntity);
+        entityChange(
+          nunjucks.renderString(valueTemplate, aggregatedProperties.current),
+        );
+        inputsState.current.entityName = initialEntity.metadata.name;
+      }
     }
   }, [entities, name, valuePath, valueTemplate]);
   /* eslint-enable */
