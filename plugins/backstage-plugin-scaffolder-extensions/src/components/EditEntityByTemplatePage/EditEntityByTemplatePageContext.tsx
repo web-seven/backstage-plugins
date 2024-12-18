@@ -24,6 +24,7 @@ import { scaffolderExtensionsTranslationRef } from '../../translation';
 import { useTranslationRef } from '@backstage/core-plugin-api/alpha';
 import qs from 'qs';
 import { useTemplateFormState } from '../../FormStateContext';
+import Pako from 'pako';
 
 export type EditEntityByTemplatePageProps = {
   customFieldExtensions: FieldExtensionOptions<any, any>[];
@@ -79,11 +80,18 @@ export const EditEntityByTemplatePageContext = (
 
         (async () => {
           const entity = await catalogApi.getEntityByRef(entityRef);
-          const encodedInitialState =
+          const compressedInitialState =
             entity?.metadata?.annotations?.[FORMDATA_ANNOTATION_PATH] || '';
 
-          if (encodedInitialState) {
-            setInitialState(JSON.parse(atob(encodedInitialState)));
+          if (compressedInitialState) {
+            const compressedBinary = Buffer.from(
+              compressedInitialState,
+              'base64',
+            );
+            const decompressed = Pako.ungzip(compressedBinary, {
+              to: 'string',
+            });
+            setInitialState(JSON.parse(decompressed));
           }
         })();
       }
@@ -106,9 +114,12 @@ export const EditEntityByTemplatePageContext = (
     let values = { ...initialValues };
 
     if (formState) {
+      const compressed = Pako.gzip(JSON.stringify({ ...values, formState }));
+      const compressedBase64 = Buffer.from(compressed).toString('base64');
+
       values = {
         ...values,
-        _editData: btoa(JSON.stringify({ ...values, formState })),
+        _editData: compressedBase64,
       };
     }
 
