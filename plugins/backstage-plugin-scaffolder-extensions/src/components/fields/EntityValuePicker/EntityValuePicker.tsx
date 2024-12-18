@@ -230,10 +230,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
 
   function onEntitySelect(_: any, ref: Entity | null) {
     if (ref) {
-      inputsState.current = {
-        entityName: ref.metadata.name,
-        additionalValues: {},
-      };
+      inputsState.current.entityName = ref.metadata.name;
       if (valuePath) {
         const valueByPath =
           typeof getValueByPath(ref, valuePath) === 'string'
@@ -273,28 +270,17 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
         inputsState.current =
           formState && Object.keys(formState).length > 0 && formState?.[name]
             ? (formState?.[name] as FormState)
-            : initialFormState;
+            : initialFormState || {
+                additionalValues: {},
+                entityName: '',
+              };
 
         const entity = entities?.catalogEntities.find(
-          e => e.metadata.name === inputsState.current?.entityName,
+          e => e.metadata.name === inputsState.current.entityName,
         );
         initialEntity = entity ? entity : null;
       }
-      setAutocompleteValue(initialEntity);
-
-      if (valuePath && initialEntity) {
-        const valueByPath =
-          typeof getValueByPath(initialEntity, valuePath) === 'string'
-            ? getValueByPath(initialEntity, valuePath)
-            : JSON.stringify(getValueByPath(initialEntity, valuePath));
-        entityChange(valueByPath);
-      } else if (!valuePath && initialEntity) {
-        renderAdditionalInputs(initialEntity);
-        entityChange(
-          nunjucks.renderString(valueTemplate, aggregatedProperties.current),
-        );
-        inputsState.current.entityName = initialEntity.metadata.name;
-      }
+      onEntitySelect('', initialEntity);
     }
   }, [entities, name, valuePath, valueTemplate]);
   /* eslint-enable */
