@@ -121,5 +121,5 @@ Example configuration of the `EntityValuePicker` field in a template:
 ui:field: EntityObjectPicker
 ui:options:
   labelVariant: primaryTitle,
-  valuePath: metadata.name
+  valuesSchema: (described above)
 ```

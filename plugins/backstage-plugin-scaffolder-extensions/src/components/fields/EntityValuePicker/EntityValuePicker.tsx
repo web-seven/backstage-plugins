@@ -28,7 +28,7 @@ import {
 } from './schema';
 import { VirtualizedListbox } from '../../fieldsRelated/VirtualizedListBox';
 import { EntityDisplayName } from '../../fieldsRelated/EntityDisplayName';
-import { JsonObject, JsonValue, JsonArray } from '@backstage/types';
+import { JsonObject, JsonValue } from '@backstage/types';
 import nunjucks from 'nunjucks';
 import { getFilledSchema, getValueByPath } from '../../../utils';
 import { AdditionalPicker } from '../../fieldsRelated/AdditionalPicker';
@@ -171,12 +171,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
 
       for (const key in entityValues) {
         if (entityValues.hasOwnProperty(key)) {
-          aggregatedProperties.current = {
-            ...aggregatedProperties.current,
-            [key]: entityValues[key],
-          };
-
-          const currentEntityValue = entityValues[key];
+          const currentEntityValue = entityValues[key] as JsonValue;
           let initialValue = null;
           if (inputsState.current.additionalValues) {
             initialValue = inputsState.current.additionalValues[key] ?? null;
@@ -186,7 +181,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
             newAdditionalInputs.push(
               <AdditionalPicker
                 key={key}
-                options={currentEntityValue as JsonArray}
+                options={currentEntityValue}
                 label={key}
                 setInputStateValue={setInputStateValue}
                 setAggregatedPropertiesValue={setAggregatedPropertiesValue}
@@ -199,25 +194,35 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
             typeof currentEntityValue === 'object'
           ) {
             const optionLabel =
-              typeof (currentEntityValue as any)?.optionLabel === 'string'
-                ? (currentEntityValue as any)?.optionLabel
+              typeof currentEntityValue?.optionLabel === 'string'
+                ? currentEntityValue?.optionLabel
                 : undefined;
 
-            if (Array.isArray((currentEntityValue as any)?.value)) {
+            if (Array.isArray(currentEntityValue?.value)) {
               newAdditionalInputs.push(
                 <AdditionalPicker
                   key={key}
-                  options={(currentEntityValue as any)?.value as JsonArray}
+                  options={currentEntityValue?.value}
                   label={key}
                   optionLabel={optionLabel}
-                  properties={(currentEntityValue as any)?.properties}
+                  properties={currentEntityValue?.properties}
                   setInputStateValue={setInputStateValue}
                   setAggregatedPropertiesValue={setAggregatedPropertiesValue}
                   keys={[key]}
                   initialValue={initialValue}
                 />,
               );
+            } else if (currentEntityValue?.value) {
+              aggregatedProperties.current = {
+                ...aggregatedProperties.current,
+                [key]: currentEntityValue.value,
+              };
             }
+          } else {
+            aggregatedProperties.current = {
+              ...aggregatedProperties.current,
+              [key]: currentEntityValue,
+            };
           }
         }
       }
