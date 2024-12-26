@@ -243,9 +243,17 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
     setAdditionalInputs(newAdditionalInputs);
   }
 
-  function onEntitySelect(_: any, ref: Entity | null) {
+  function onEntitySelect(
+    ref: Entity | null,
+    isInitialEntity: boolean = false,
+  ) {
     if (ref) {
-      inputsState.current.entityName = ref.metadata.name;
+      if (!isInitialEntity) {
+        inputsState.current = {
+          entityName: ref.metadata.name,
+          additionalValues: {},
+        };
+      }
       if (valuePath) {
         const valueByPath =
           typeof getValueByPath(ref, valuePath) === 'string'
@@ -292,7 +300,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
         );
         initialEntity = entity ? entity : null;
       }
-      onEntitySelect('', initialEntity);
+      onEntitySelect(initialEntity, true);
     }
   }, [entities, name, valuePath, valueTemplate]);
   /* eslint-enable */
@@ -321,7 +329,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
           disabled={entities?.catalogEntities.length === 1}
           id={idSchema?.$id}
           loading={loading}
-          onChange={onEntitySelect}
+          onChange={(_, value) => onEntitySelect(value)}
           options={entities?.catalogEntities || []}
           getOptionLabel={option => getEntityOptionLabel(option)}
           autoSelect
