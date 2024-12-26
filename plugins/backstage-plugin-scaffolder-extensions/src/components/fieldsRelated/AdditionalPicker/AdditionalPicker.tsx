@@ -12,10 +12,10 @@ type AdditionalPickerProps = {
   label: string;
   optionLabel?: string;
   properties?: JsonValue;
-  setInputStateValue: (keys: string[], value: JsonValue | undefined) => void;
-  setAggregatedPropertiesValue: (
+  setInputValue: (
     keys: string[],
-    value: JsonValue | undefined,
+    inputValue: JsonValue | undefined,
+    filledProperties: JsonValue | undefined,
   ) => void;
   keys: string[];
   initialValue: JsonValue;
@@ -27,8 +27,7 @@ export const AdditionalPicker = ({
   label,
   optionLabel,
   properties,
-  setInputStateValue,
-  setAggregatedPropertiesValue,
+  setInputValue,
   keys,
   initialValue,
 }: AdditionalPickerProps): JSX.Element => {
@@ -40,27 +39,26 @@ export const AdditionalPicker = ({
   const onSelectEntityProperty = useCallback(
     (
       _: any,
-      value: JsonValue | undefined,
+      inputValue: JsonValue | undefined,
       newInitialValue: JsonValue = null,
     ) => {
-      setAutocompleteValue(value || null);
+      setAutocompleteValue(inputValue || null);
       setNewInputs([]);
 
       const currentInitialValue = newInitialValue || initialValue;
 
       if (
-        value &&
-        typeof value === 'object' &&
-        !Array.isArray(value) &&
+        inputValue &&
+        typeof inputValue === 'object' &&
+        !Array.isArray(inputValue) &&
         properties
       ) {
         const filledProperties = getFilledSchema(
-          value,
+          inputValue,
           properties as JsonObject,
         );
 
-        setInputStateValue(keys, { $_value: value });
-        setAggregatedPropertiesValue(keys, filledProperties);
+        setInputValue(keys, { $_value: inputValue }, inputValue);
 
         const inputs: React.ReactNode[] = [];
 
@@ -84,8 +82,7 @@ export const AdditionalPicker = ({
                   key={key}
                   options={filledProperty as JsonArray}
                   label={key}
-                  setInputStateValue={setInputStateValue}
-                  setAggregatedPropertiesValue={setAggregatedPropertiesValue}
+                  setInputValue={setInputValue}
                   keys={[...keys, key]}
                   initialValue={nextInitialValue ?? null}
                 />,
@@ -103,8 +100,7 @@ export const AdditionalPicker = ({
                   options={(filledProperty as any).value as JsonArray}
                   properties={(filledProperty as any).properties}
                   optionLabel={(filledProperty as any).optionLabel as string}
-                  setInputStateValue={setInputStateValue}
-                  setAggregatedPropertiesValue={setAggregatedPropertiesValue}
+                  setInputValue={setInputValue}
                   keys={[...keys, key]}
                   initialValue={nextInitialValue ?? null}
                 />,
@@ -114,17 +110,10 @@ export const AdditionalPicker = ({
         }
         setNewInputs(inputs);
       } else {
-        setInputStateValue(keys, value);
-        setAggregatedPropertiesValue(keys, value);
+        setInputValue(keys, inputValue, inputValue);
       }
     },
-    [
-      properties,
-      initialValue,
-      keys,
-      setAggregatedPropertiesValue,
-      setInputStateValue,
-    ],
+    [properties, initialValue, keys, setInputValue],
   );
 
   const getPropertyOptionLabel = (option: JsonValue | undefined): string => {
