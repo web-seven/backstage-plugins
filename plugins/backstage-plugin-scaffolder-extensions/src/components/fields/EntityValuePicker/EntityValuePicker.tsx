@@ -141,8 +141,26 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
         : value;
   }
 
-  function setInputStateValue(keys: string[], value: JsonValue | undefined) {
+  function isAllPropertiesFilled(obj: JsonObject): boolean {
+    return Object.values(obj).every(value => {
+      if (value === null || value === undefined || Array.isArray(value))
+        return false;
+
+      if (typeof value === 'object') {
+        return isAllPropertiesFilled(value as JsonObject);
+      }
+
+      return true;
+    });
+  }
+
+  function setInputValue(
+    keys: string[],
+    value: JsonValue | undefined,
+    filledProperties: JsonValue | undefined,
+  ) {
     setTargetValue(inputsState.current.additionalValues, keys, value);
+    setTargetValue(aggregatedProperties.current, keys, filledProperties);
 
     if (setFormState) {
       setFormState({
@@ -151,16 +169,11 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
         },
       });
     }
-  }
-
-  function setAggregatedPropertiesValue(
-    keys: string[],
-    value: JsonValue | undefined,
-  ) {
-    setTargetValue(aggregatedProperties.current, keys, value);
-    entityChange(
-      nunjucks.renderString(valueTemplate, aggregatedProperties.current),
-    );
+    if (isAllPropertiesFilled(aggregatedProperties.current)) {
+      entityChange(
+        nunjucks.renderString(valueTemplate, aggregatedProperties.current),
+      );
+    }
   }
 
   function renderAdditionalInputs(entity: Entity | null) {
@@ -171,6 +184,11 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
 
       for (const key in entityValues) {
         if (entityValues.hasOwnProperty(key)) {
+          aggregatedProperties.current = {
+            ...aggregatedProperties.current,
+            [key]: entityValues[key],
+          };
+
           const currentEntityValue = entityValues[key] as JsonValue;
           let initialValue = null;
           if (inputsState.current.additionalValues) {
@@ -183,8 +201,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
                 key={key}
                 options={currentEntityValue}
                 label={key}
-                setInputStateValue={setInputStateValue}
-                setAggregatedPropertiesValue={setAggregatedPropertiesValue}
+                setInputValue={setInputValue}
                 keys={[key]}
                 initialValue={initialValue}
               />,
@@ -206,30 +223,23 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
                   label={key}
                   optionLabel={optionLabel}
                   properties={currentEntityValue?.properties}
-                  setInputStateValue={setInputStateValue}
-                  setAggregatedPropertiesValue={setAggregatedPropertiesValue}
+                  setInputValue={setInputValue}
                   keys={[key]}
                   initialValue={initialValue}
                 />,
               );
-            } else if (currentEntityValue?.value) {
-              aggregatedProperties.current = {
-                ...aggregatedProperties.current,
-                [key]: currentEntityValue.value,
-              };
             }
-          } else {
-            aggregatedProperties.current = {
-              ...aggregatedProperties.current,
-              [key]: currentEntityValue,
-            };
           }
         }
       }
     } else {
       aggregatedProperties.current = {};
     }
-
+    if (!newAdditionalInputs.length) {
+      entityChange(
+        nunjucks.renderString(valueTemplate, aggregatedProperties.current),
+      );
+    }
     setAdditionalInputs(newAdditionalInputs);
   }
 
@@ -252,9 +262,6 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
           });
         }
         renderAdditionalInputs(ref);
-        entityChange(
-          nunjucks.renderString(valueTemplate, aggregatedProperties.current),
-        );
       }
     } else {
       renderAdditionalInputs(null);
