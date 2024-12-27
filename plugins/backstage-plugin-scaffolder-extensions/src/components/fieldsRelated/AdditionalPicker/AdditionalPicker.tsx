@@ -58,7 +58,7 @@ export const AdditionalPicker = ({
           properties as JsonObject,
         );
 
-        setInputValue(keys, { $_value: inputValue }, inputValue);
+        setInputValue(keys, { $_value: inputValue }, filledProperties);
 
         const inputs: React.ReactNode[] = [];
 

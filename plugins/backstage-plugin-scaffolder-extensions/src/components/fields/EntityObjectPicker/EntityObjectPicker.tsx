@@ -24,6 +24,7 @@ import {
 } from './schema';
 import { VirtualizedListbox } from '../../fieldsRelated/VirtualizedListBox';
 import { EntityDisplayName } from '../../fieldsRelated/EntityDisplayName';
+import { useTemplateFormState } from '../../../FormStateContext';
 
 export { EntityObjectPickerSchema } from './schema';
 
@@ -44,6 +45,11 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
     idSchema,
     name,
   } = props;
+
+  const templateFormState = useTemplateFormState();
+  const { formState, setFormState } = templateFormState
+    ? templateFormState
+    : { formState: null, setFormState: null };
 
   const [autocompleteValue, setAutocompleteValue] = useState<Entity | null>(
     null,
@@ -92,24 +98,36 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
   // Handle changes to the selected entity in the picker.
   const onEntitySelect = useCallback(
     (entity: Entity | null) => {
+      if (entity && setFormState) {
+        setFormState({
+          [name]: entity.metadata.name,
+        });
+      }
       onChange(entity ? entity : undefined);
       setAutocompleteValue(entity ? entity : null);
     },
-    [onChange],
+    [onChange, name, setFormState],
   );
 
   /* eslint-disable */
   useEffect(() => {
     if (!loading && entities) {
+      let initialEntityName = props.formContext.formData.formState?.[name];
+
       let initialEntity: Entity | null = null;
 
       if (entities?.catalogEntities.length === 1) {
         initialEntity = entities.catalogEntities[0];
       } else {
-        const formDataEntity = entities?.catalogEntities.find(
-          e => e.metadata.name === formData?.metadata.name,
+        initialEntityName =
+          formState && Object.keys(formState).length > 0 && formState?.[name]
+            ? formState?.[name]
+            : initialEntityName || formData?.metadata.name;
+
+        const entity = entities?.catalogEntities.find(
+          e => e.metadata.name === initialEntityName,
         );
-        initialEntity = formDataEntity ? formDataEntity : null;
+        initialEntity = entity ? entity : null;
       }
       onEntitySelect(initialEntity);
     }
