@@ -42,7 +42,12 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
     rawErrors,
     formData,
     idSchema,
+    name,
   } = props;
+
+  const [autocompleteValue, setAutocompleteValue] = useState<Entity | null>(
+    null,
+  );
 
   // Build a filter for querying catalog entities based on the uiSchema provided in props.
   const catalogFilter = buildCatalogFilter(uiSchema);
@@ -85,21 +90,38 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
   });
 
   // Handle changes to the selected entity in the picker.
-  const onSelect = useCallback(
-    (_: any, ref: Entity | null) => {
-      onChange(ref ? ref : undefined);
+  const onEntitySelect = useCallback(
+    (entity: Entity | null) => {
+      onChange(entity ? entity : undefined);
+      setAutocompleteValue(entity ? entity : null);
     },
     [onChange],
   );
 
-  const [inputValue, setInputValue] = useState<string>('');
+  /* eslint-disable */
+  useEffect(() => {
+    if (!loading && entities) {
+      let initialEntity: Entity | null = null;
+
+      if (entities?.catalogEntities.length === 1) {
+        initialEntity = entities.catalogEntities[0];
+      } else {
+        const formDataEntity = entities?.catalogEntities.find(
+          e => e.metadata.name === formData?.metadata.name,
+        );
+        initialEntity = formDataEntity ? formDataEntity : null;
+      }
+      onEntitySelect(initialEntity);
+    }
+  }, [entities, name]);
+  /* eslint-enable */
 
   // Get the label to display for a given entity based on the chosen label variant.
-  const getOptionLabel = useCallback(
-    (ref: Entity) => {
+  const getEntityOptionLabel = useCallback(
+    (entity: Entity) => {
       try {
         const presentation = entities?.entityRefToPresentation.get(
-          stringifyEntityRef(ref),
+          stringifyEntityRef(entity),
         );
 
         return presentation?.[
@@ -112,61 +134,48 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
     [entities, labelVariant],
   );
 
-  useEffect(() => {
-    if (entities && formData && Object.keys(formData).length) {
-      setInputValue(getOptionLabel(formData as Entity));
-    }
-  }, [formData, entities, getOptionLabel]);
-
-  // If only one entity is available, select it automatically.
-  useEffect(() => {
-    if (entities?.catalogEntities.length === 1) {
-      const firstEntity = entities.catalogEntities[0];
-      setInputValue(getOptionLabel(firstEntity));
-      onChange(firstEntity);
-    }
-  }, [entities, onChange, getOptionLabel]);
-
   return (
-    <FormControl
-      margin="normal"
-      required={required}
-      error={rawErrors?.length > 0 && !formData}
-    >
-      <Autocomplete
-        inputValue={inputValue}
-        onInputChange={(_, newValue) => setInputValue(newValue)}
-        disabled={entities?.catalogEntities.length === 1}
-        id={idSchema?.$id}
-        loading={loading}
-        onChange={onSelect}
-        options={entities?.catalogEntities || []}
-        getOptionLabel={option => {
-          return getOptionLabel(option);
-        }}
-        autoSelect
-        freeSolo={false}
-        renderInput={params => (
-          <TextField
-            {...params}
-            label={title}
-            margin="dense"
-            helperText={description}
-            FormHelperTextProps={{ margin: 'dense', style: { marginLeft: 0 } }}
-            variant="outlined"
-            required={required}
-            InputProps={params.InputProps}
-          />
-        )}
-        renderOption={option => (
-          <EntityDisplayName entityRef={option} labelVariant={labelVariant} />
-        )}
-        filterOptions={createFilterOptions<Entity>({
-          stringify: option => getOptionLabel(option),
-        })}
-        ListboxComponent={VirtualizedListbox}
-      />
-    </FormControl>
+    <>
+      <FormControl
+        margin="normal"
+        required={required}
+        error={rawErrors?.length > 0 && !formData}
+      >
+        <Autocomplete
+          value={autocompleteValue}
+          disabled={entities?.catalogEntities.length === 1}
+          id={idSchema?.$id}
+          loading={loading}
+          onChange={(_, value) => onEntitySelect(value)}
+          options={entities?.catalogEntities || []}
+          getOptionLabel={option => getEntityOptionLabel(option)}
+          autoSelect
+          freeSolo={false}
+          renderInput={params => (
+            <TextField
+              {...params}
+              label={title}
+              margin="dense"
+              helperText={description}
+              FormHelperTextProps={{
+                margin: 'dense',
+                style: { marginLeft: 0 },
+              }}
+              variant="outlined"
+              required={required}
+              InputProps={params.InputProps}
+            />
+          )}
+          renderOption={option => (
+            <EntityDisplayName entityRef={option} labelVariant={labelVariant} />
+          )}
+          filterOptions={createFilterOptions<Entity>({
+            stringify: option => getEntityOptionLabel(option),
+          })}
+          ListboxComponent={VirtualizedListbox}
+        />
+      </FormControl>
+    </>
   );
 };
 
