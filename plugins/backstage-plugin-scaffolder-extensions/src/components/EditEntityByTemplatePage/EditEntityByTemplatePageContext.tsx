@@ -106,9 +106,13 @@ export const EditEntityByTemplatePageContext = (
     let values = { ...initialValues };
 
     if (formState) {
+      const editDataValues = Object.fromEntries(
+        Object.entries(values).filter(([key]) => !(key in formState)),
+      );
+
       values = {
         ...values,
-        _editData: JSON.stringify({ ...values, formState }),
+        _editData: JSON.stringify({ ...editDataValues, formState }),
       };
     }
 
