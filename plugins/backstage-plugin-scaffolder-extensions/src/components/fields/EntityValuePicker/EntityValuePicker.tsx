@@ -1,12 +1,4 @@
-import {
-  type EntityFilterQuery,
-  CATALOG_FILTER_EXISTS,
-} from '@backstage/catalog-client';
-import {
-  CompoundEntityRef,
-  Entity,
-  stringifyEntityRef,
-} from '@backstage/catalog-model';
+import { Entity, stringifyEntityRef } from '@backstage/catalog-model';
 import { useApi } from '@backstage/core-plugin-api';
 import {
   EntityRefPresentationSnapshot,
@@ -20,17 +12,17 @@ import Autocomplete, {
 } from '@material-ui/lab/Autocomplete';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import useAsync from 'react-use/esm/useAsync';
-import {
-  EntityValuePickerFilterQueryValue,
-  EntityValuePickerProps,
-  EntityValuePickerUiOptions,
-  EntityValuePickerFilterQuery,
-} from './schema';
+import { EntityValuePickerProps } from './schema';
 import { VirtualizedListbox } from '../../fieldsRelated/VirtualizedListBox';
 import { EntityDisplayName } from '../../fieldsRelated/EntityDisplayName';
 import { JsonObject, JsonValue } from '@backstage/types';
 import nunjucks from 'nunjucks';
-import { getFilledSchema, getValueByPath } from '../../../utils';
+import {
+  buildCatalogFilter,
+  getEntityOptionLabel,
+  getFilledSchema,
+  getValueByPath,
+} from '../../../utils';
 import { AdditionalPicker } from '../../fieldsRelated/AdditionalPicker';
 import { useTemplateFormState } from '../../../FormStateContext';
 
@@ -305,18 +297,6 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
   }, [entities, name, valuePath, valueTemplate]);
   /* eslint-enable */
 
-  function getEntityOptionLabel(ref: Entity | CompoundEntityRef) {
-    if (ref) {
-      const presentation = entities?.entityRefToPresentation.get(
-        stringifyEntityRef(ref),
-      );
-      return presentation?.[
-        labelVariant as keyof EntityRefPresentationSnapshot
-      ] as string;
-    }
-    return '';
-  }
-
   return (
     <>
       <FormControl
@@ -331,7 +311,9 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
           loading={loading}
           onChange={(_, value) => onEntitySelect(value)}
           options={entities?.catalogEntities || []}
-          getOptionLabel={option => getEntityOptionLabel(option)}
+          getOptionLabel={option =>
+            getEntityOptionLabel(option, entities, labelVariant)
+          }
           autoSelect
           freeSolo={false}
           renderInput={params => (
@@ -353,7 +335,8 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
             <EntityDisplayName entityRef={option} labelVariant={labelVariant} />
           )}
           filterOptions={createFilterOptions<Entity>({
-            stringify: option => getEntityOptionLabel(option),
+            stringify: option =>
+              getEntityOptionLabel(option, entities, labelVariant),
           })}
           ListboxComponent={VirtualizedListbox}
         />
@@ -362,71 +345,3 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
     </>
   );
 };
-
-/**
- * Converts a especial `{exists: true}` value to the `CATALOG_FILTER_EXISTS` symbol.
- *
- * @param value - The value to convert.
- * @returns The converted value.
- */
-function convertOpsValues(
-  value: Exclude<EntityValuePickerFilterQueryValue, Array<any>>,
-): string | symbol {
-  if (typeof value === 'object' && value.exists) {
-    return CATALOG_FILTER_EXISTS;
-  }
-  return value?.toString();
-}
-
-/**
- * Converts schema filters to entity filter query, replacing `{exists:true}` values
- * with the constant `CATALOG_FILTER_EXISTS`.
- *
- * @param schemaFilters - An object containing schema filters with keys as filter names
- * and values as filter values.
- * @returns An object with the same keys as the input object, but with `{exists:true}` values
- * transformed to `CATALOG_FILTER_EXISTS` symbol.
- */
-function convertSchemaFiltersToQuery(
-  schemaFilters: EntityValuePickerFilterQuery,
-): Exclude<EntityFilterQuery, Array<any>> {
-  const query: EntityFilterQuery = {};
-
-  for (const [key, value] of Object.entries(schemaFilters)) {
-    if (Array.isArray(value)) {
-      query[key] = value;
-    } else {
-      query[key] = convertOpsValues(value);
-    }
-  }
-
-  return query;
-}
-
-/**
- * Builds an `EntityFilterQuery` based on the `uiSchema` passed in.
- * If `catalogFilter` is specified in the `uiSchema`, it is converted to a `EntityFilterQuery`.
- * If `allowedKinds` is specified in the `uiSchema` will support the legacy `allowedKinds` option.
- *
- * @param uiSchema The `uiSchema` of an `EntityValuePicker` component.
- * @returns An `EntityFilterQuery` based on the `uiSchema`, or `undefined` if `catalogFilter` is not specified in the `uiSchema`.
- */
-function buildCatalogFilter(
-  uiSchema: EntityValuePickerProps['uiSchema'],
-): EntityFilterQuery | undefined {
-  const allowedKinds = uiSchema['ui:options']?.allowedKinds;
-
-  const catalogFilter: EntityValuePickerUiOptions['catalogFilter'] | undefined =
-    uiSchema['ui:options']?.catalogFilter ||
-    (allowedKinds && { kind: allowedKinds });
-
-  if (!catalogFilter) {
-    return undefined;
-  }
-
-  if (Array.isArray(catalogFilter)) {
-    return catalogFilter.map(convertSchemaFiltersToQuery);
-  }
-
-  return convertSchemaFiltersToQuery(catalogFilter);
-}

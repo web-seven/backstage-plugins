@@ -14,8 +14,8 @@ export const entityQueryFilterExpressionSchema = z.record(
 /**
  * @public
  */
-export const EntityObjectPickerFieldSchema = makeFieldSchemaFromZod(
-  z.record(z.any()),
+export const MultiEntityObjectPickerFieldSchema = makeFieldSchemaFromZod(
+  z.array(z.record(z.any())),
   z.object({
     catalogFilter: z
       .array(entityQueryFilterExpressionSchema)
@@ -33,20 +33,22 @@ export const EntityObjectPickerFieldSchema = makeFieldSchemaFromZod(
 
 /**
  * The input props that can be specified under `ui:options` for the
- * `EntityObjectPicker` field extension.
+ * `MultiEntityObjectPicker` field extension.
  *
  * @public
  */
-export type EntityObjectPickerUiOptions =
-  typeof EntityObjectPickerFieldSchema.uiOptionsType;
+export type MultiEntityObjectPickerUiOptions =
+  typeof MultiEntityObjectPickerFieldSchema.uiOptionsType;
 
-export type EntityObjectPickerProps = typeof EntityObjectPickerFieldSchema.type;
+export type MultiEntityObjectPickerProps =
+  typeof MultiEntityObjectPickerFieldSchema.type;
 
-export const EntityObjectPickerSchema = EntityObjectPickerFieldSchema.schema;
+export const MultiEntityObjectPickerSchema =
+  MultiEntityObjectPickerFieldSchema.schema;
 
-export type EntityObjectPickerFilterQuery = z.TypeOf<
+export type MultiEntityObjectPickerFilterQuery = z.TypeOf<
   typeof entityQueryFilterExpressionSchema
 >;
 
-export type EntityObjectPickerFilterQueryValue =
-  EntityObjectPickerFilterQuery[keyof EntityObjectPickerFilterQuery];
+export type MultiEntityObjectPickerFilterQueryValue =
+  MultiEntityObjectPickerFilterQuery[keyof MultiEntityObjectPickerFilterQuery];

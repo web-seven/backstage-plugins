@@ -14,8 +14,8 @@ export const entityQueryFilterExpressionSchema = z.record(
 /**
  * @public
  */
-export const EntityValuePickerFieldSchema = makeFieldSchemaFromZod(
-  z.string(),
+export const MultiEntityValuePickerFieldSchema = makeFieldSchemaFromZod(
+  z.array(z.string()),
   z.object({
     catalogFilter: z
       .array(entityQueryFilterExpressionSchema)
@@ -36,7 +36,7 @@ export const EntityValuePickerFieldSchema = makeFieldSchemaFromZod(
       .string()
       .optional()
       .describe(
-        'Nunjucks template that uses selected values from entity and set the final value of the EntityValuePicker',
+        'Nunjucks template that uses selected values from entity and set the final value of the MultiEntityValuePicker',
       ),
     labelVariant: z
       .string()
@@ -49,20 +49,22 @@ export const EntityValuePickerFieldSchema = makeFieldSchemaFromZod(
 
 /**
  * The input props that can be specified under `ui:options` for the
- * `EntityValuePicker` field extension.
+ * `MultiEntityValuePicker` field extension.
  *
  * @public
  */
-export type EntityValuePickerUiOptions =
-  typeof EntityValuePickerFieldSchema.uiOptionsType;
+export type MultiEntityValuePickerUiOptions =
+  typeof MultiEntityValuePickerFieldSchema.uiOptionsType;
 
-export type EntityValuePickerProps = typeof EntityValuePickerFieldSchema.type;
+export type MultiEntityValuePickerProps =
+  typeof MultiEntityValuePickerFieldSchema.type;
 
-export const EntityValuePickerSchema = EntityValuePickerFieldSchema.schema;
+export const MultiEntityValuePickerSchema =
+  MultiEntityValuePickerFieldSchema.schema;
 
-export type EntityValuePickerFilterQuery = z.TypeOf<
+export type MultiEntityValuePickerFilterQuery = z.TypeOf<
   typeof entityQueryFilterExpressionSchema
 >;
 
-export type EntityValuePickerFilterQueryValue =
-  EntityValuePickerFilterQuery[keyof EntityValuePickerFilterQuery];
+export type MultiEntityValuePickerFilterQueryValue =
+  MultiEntityValuePickerFilterQuery[keyof MultiEntityValuePickerFilterQuery];
