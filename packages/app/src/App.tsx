@@ -39,7 +39,9 @@ import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 import {
   EntityObjectPickerFieldExtension,
+  MultiEntityObjectPickerFieldExtension,
   EntityValuePickerFieldExtension,
+  MultiEntityValuePickerFieldExtension,
   ReviewStepComponent,
   EditEntityByTemplatePage,
 } from '@web-seven/backstage-plugin-scaffolder-extensions';
@@ -103,6 +105,8 @@ const routes = (
       <ScaffolderFieldExtensions>
         <EntityObjectPickerFieldExtension />
         <EntityValuePickerFieldExtension />
+        <MultiEntityObjectPickerFieldExtension />
+        <MultiEntityValuePickerFieldExtension />
       </ScaffolderFieldExtensions>
     </Route>
     <Route path="/api-docs" element={<ApiExplorerPage />} />

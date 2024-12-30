@@ -1,0 +1,1 @@
+export { MultiEntityObjectPickerFieldExtension } from './MultiEntityObjectPickerFieldExtension';

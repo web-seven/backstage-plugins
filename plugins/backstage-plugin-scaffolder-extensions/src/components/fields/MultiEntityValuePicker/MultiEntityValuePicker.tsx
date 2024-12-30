@@ -12,24 +12,28 @@ import Autocomplete, {
 } from '@material-ui/lab/Autocomplete';
 import React, { useCallback, useEffect, useState } from 'react';
 import useAsync from 'react-use/esm/useAsync';
-import { EntityObjectPickerProps } from './schema';
+import { MultiEntityValuePickerProps } from './schema';
 import { VirtualizedListbox } from '../../fieldsRelated/VirtualizedListBox';
 import { EntityDisplayName } from '../../fieldsRelated/EntityDisplayName';
-import { buildCatalogFilter, getEntityOptionLabel } from '../../../utils';
 import { useTemplateFormState } from '../../../FormStateContext';
+import {
+  buildCatalogFilter,
+  getEntityOptionLabel,
+  getValueByPath,
+} from '../../../utils';
 
-export { EntityObjectPickerSchema } from './schema';
+export { MultiEntityValuePickerSchema } from './schema';
 
 /**
- * The underlying component that is rendered in the form for the `EntityObjectPicker`
+ * The underlying component that is rendered in the form for the `MultiEntityValuePicker`
  * field extension.
  *
  * @public
  */
-export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
+export const MultiEntityValuePicker = (props: MultiEntityValuePickerProps) => {
   const {
     onChange,
-    schema: { title = 'Entity', description = 'An entity from the catalog' },
+    schema: { title = 'Entities', description = 'Entities from the catalog' },
     required,
     uiSchema,
     rawErrors,
@@ -43,14 +47,11 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
     ? templateFormState
     : { formState: null, setFormState: null };
 
-  const [autocompleteValue, setAutocompleteValue] = useState<Entity | null>(
-    null,
-  );
+  const [autocompleteValue, setAutocompleteValue] = useState<Entity[]>([]);
 
-  // Build a filter for querying catalog entities based on the uiSchema provided in props.
   const catalogFilter = buildCatalogFilter(uiSchema);
+  const valuePath: string | undefined = uiSchema['ui:options']?.valuePath;
 
-  // Determine the variant of label that will be displayed for each option in the picker.
   let labelVariant = uiSchema['ui:options']?.labelVariant;
 
   labelVariant =
@@ -62,7 +63,6 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
   const catalogApi = useApi(catalogApiRef);
   const entityPresentationApi = useApi(entityPresentationApiRef);
 
-  // Fetch entities from the catalog and build a map of entity references to presentation snapshots.
   const { value: entities, loading } = useAsync(async () => {
     const { items } = await catalogApi.getEntities(
       catalogFilter ? { filter: catalogFilter } : { filter: undefined },
@@ -87,41 +87,58 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
     return { catalogEntities: items, entityRefToPresentation };
   });
 
-  // Handle changes to the selected entity in the picker.
-  const onEntitySelect = useCallback(
-    (entity: Entity | null) => {
-      if (entity && setFormState) {
-        setFormState({
-          [name]: entity.metadata.name,
-        });
+  const onEntitiesSelect = useCallback(
+    (selectedEntities: Entity[]) => {
+      if (!valuePath) {
+        throw new Error('Value Path is not set in ui:options');
+      } else {
+        if (setFormState) {
+          setFormState({
+            [name]: selectedEntities.map(entity => entity.metadata.name),
+          });
+        }
+        onChange(
+          selectedEntities.map(entity => getValueByPath(entity, valuePath)),
+        );
+        setAutocompleteValue(selectedEntities);
       }
-      onChange(entity ? entity : undefined);
-      setAutocompleteValue(entity ? entity : null);
     },
-    [onChange, name, setFormState],
+    [onChange, name, setFormState, valuePath],
   );
 
   /* eslint-disable */
   useEffect(() => {
     if (!loading && entities) {
-      let initialEntityName = props.formContext.formData.formState?.[name];
+      let initialEntitiesNames: string[] = [];
 
-      let initialEntity: Entity | null = null;
+      if (Array.isArray(props.formContext.formData.formState?.[name])) {
+        initialEntitiesNames = props.formContext.formData.formState?.[
+          name
+        ] as string[];
+      }
+
+      let initialEntities: Entity[] = [];
 
       if (entities?.catalogEntities.length === 1) {
-        initialEntity = entities.catalogEntities[0];
+        initialEntities = [entities.catalogEntities[0]];
       } else {
-        initialEntityName =
-          formState && Object.keys(formState).length > 0 && formState?.[name]
-            ? formState?.[name]
-            : initialEntityName || formData?.metadata.name;
+        const formStateEntitiesNames = formState?.[name] as
+          | string[]
+          | undefined;
 
-        const entity = entities?.catalogEntities.find(
-          e => e.metadata.name === initialEntityName,
-        );
-        initialEntity = entity ? entity : null;
+        initialEntitiesNames =
+          formStateEntitiesNames && formStateEntitiesNames.length
+            ? formStateEntitiesNames
+            : initialEntitiesNames || [];
+
+        initialEntities = initialEntitiesNames
+          .map(entityName =>
+            entities?.catalogEntities.find(e => e.metadata.name === entityName),
+          )
+          .filter(Boolean) as Entity[];
       }
-      onEntitySelect(initialEntity);
+
+      onEntitiesSelect(initialEntities);
     }
   }, [entities, name]);
   /* eslint-enable */
@@ -134,12 +151,17 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
         error={rawErrors?.length > 0 && !formData}
       >
         <Autocomplete
+          multiple
           value={autocompleteValue}
+          filterSelectedOptions
           disabled={entities?.catalogEntities.length === 1}
           id={idSchema?.$id}
           loading={loading}
-          onChange={(_, value) => onEntitySelect(value)}
+          onChange={(_, value) => onEntitiesSelect(value)}
           options={entities?.catalogEntities || []}
+          renderOption={option => (
+            <EntityDisplayName entityRef={option} labelVariant={labelVariant} />
+          )}
           getOptionLabel={option =>
             getEntityOptionLabel(option, entities, labelVariant)
           }
@@ -159,9 +181,6 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
               required={required}
               InputProps={params.InputProps}
             />
-          )}
-          renderOption={option => (
-            <EntityDisplayName entityRef={option} labelVariant={labelVariant} />
           )}
           filterOptions={createFilterOptions<Entity>({
             stringify: option =>
