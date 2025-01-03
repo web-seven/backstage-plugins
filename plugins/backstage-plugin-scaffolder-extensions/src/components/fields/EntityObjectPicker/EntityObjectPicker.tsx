@@ -103,24 +103,18 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
 
   /* eslint-disable */
   useEffect(() => {
-    if (!loading && entities) {
-      let initialEntityName = props.formContext.formData.formState?.[name];
+    if (!loading && entities?.catalogEntities?.length) {
+      let initialEntityName =
+        props.formContext.formData?.formState?.[name] ||
+        formData?.metadata?.name;
 
-      let initialEntity: Entity | null = null;
+      const initialEntity =
+        entities.catalogEntities.length === 1
+          ? entities.catalogEntities[0]
+          : entities.catalogEntities.find(
+              e => e.metadata.name === (formState?.[name] || initialEntityName),
+            ) || null;
 
-      if (entities?.catalogEntities.length === 1) {
-        initialEntity = entities.catalogEntities[0];
-      } else {
-        initialEntityName =
-          formState && Object.keys(formState).length > 0 && formState?.[name]
-            ? formState?.[name]
-            : initialEntityName || formData?.metadata.name;
-
-        const entity = entities?.catalogEntities.find(
-          e => e.metadata.name === initialEntityName,
-        );
-        initialEntity = entity ? entity : null;
-      }
       onEntitySelect(initialEntity);
     }
   }, [entities, name]);
