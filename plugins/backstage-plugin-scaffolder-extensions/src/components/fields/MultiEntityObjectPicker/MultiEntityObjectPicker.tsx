@@ -126,7 +126,9 @@ export const MultiEntityObjectPicker = (
 
         initialEntities = initialEntitiesNames
           .map(entityName =>
-            entities?.catalogEntities.find(e => e.metadata.name === entityName),
+            entities?.catalogEntities.find(
+              (e: Entity) => e.metadata.name === entityName,
+            ),
           )
           .filter(Boolean) as Entity[];
       }
@@ -171,7 +173,7 @@ export const MultiEntityObjectPicker = (
                 style: { marginLeft: 0 },
               }}
               variant="outlined"
-              required={required}
+              required={required ? autocompleteValue.length === 0 : required}
               InputProps={params.InputProps}
             />
           )}
