@@ -288,7 +288,7 @@ export const EntityValuePicker = (props: EntityValuePickerProps) => {
               };
 
         const entity = entities?.catalogEntities.find(
-          e => e.metadata.name === inputsState.current.entityName,
+          (e: Entity) => e.metadata.name === inputsState.current.entityName,
         );
         initialEntity = entity ? entity : null;
       }

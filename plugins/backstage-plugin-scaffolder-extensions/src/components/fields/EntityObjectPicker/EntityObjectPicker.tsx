@@ -112,7 +112,8 @@ export const EntityObjectPicker = (props: EntityObjectPickerProps) => {
         entities.catalogEntities.length === 1
           ? entities.catalogEntities[0]
           : entities.catalogEntities.find(
-              e => e.metadata.name === (formState?.[name] || initialEntityName),
+              (e: Entity) =>
+                e.metadata.name === (formState?.[name] || initialEntityName),
             ) || null;
 
       onEntitySelect(initialEntity);

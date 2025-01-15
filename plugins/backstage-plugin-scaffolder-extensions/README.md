@@ -140,3 +140,63 @@ ui:options:
   valuesSchema: (described above)
   template: (described above)
 ```
+
+### EditEntityByTemplatePage
+
+You can edit an entity using the same template that you created the entity with.
+
+To use this feature you need to:
+
+1. import it and add the following prop for `ScaffolderPage` component in `App.tsx`:
+
+```javascript
+import { EditEntityByTemplatePage } from '@web-seven/backstage-plugin-scaffolder-extensions';
+
+<Route
+  path="/create"
+  element={
+    <ScaffolderPage
+      components={{
+        EXPERIMENTAL_TemplateWizardPageComponent: EditEntityByTemplatePage,
+      }}
+    />
+  }
+>
+  ...
+</Route>;
+```
+
+This component is also used to autofill custom fields when moving between template steps.
+
+2. add folowing annotations in catalog-info.yaml of your component:
+
+```yaml
+backstage.io/edit-data:
+backstage.io/edit-url:
+```
+
+values ​​for these annotations can be obtained from template parameters
+
+template:
+
+```yaml
+steps:
+  - id: fetch-base
+    name: your fetch base name
+    action: fetch:template
+    input:
+      url: ./content
+      values:
+        name: ${{ parameters.name }}
+        editData: ${{ parameters._editData }}
+```
+
+catalog-info.yaml of your entity (replace text in square brackets with required data):
+
+```yaml
+metadata:
+  name: ${{ values.name | dump }}
+  annotations:
+    backstage.io/edit-data: '${{ values.editData }}'
+    backstage.io/edit-url: /create/templates/default/[template name]?kind=[kind of entity]&namespace=[namespace of entity]&name=${{ values.name }}
+```
