@@ -68,7 +68,9 @@ export function replaceEntityObjectWithLink(
           schema.properties as JsonObject
         )[key];
 
-        if (
+        if (!fieldSchema) {
+          delete newFormData[key];
+        } else if (
           typeof fieldSchema === 'object' &&
           !Array.isArray(fieldSchema) &&
           fieldSchema !== null
