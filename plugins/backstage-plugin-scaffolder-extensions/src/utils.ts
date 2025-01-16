@@ -75,12 +75,15 @@ export function replaceEntityObjectWithLink(
           !Array.isArray(fieldSchema) &&
           fieldSchema !== null
         ) {
-          if (fieldSchema['ui:field'] === 'EntityObjectPicker') {
+          if (fieldSchema['ui:field'] === 'EntityObjectPicker' && value) {
             newFormData[key] = React.createElement(EntityRefLink, {
               entityRef: value,
             });
             fieldSchema['ui:backstage'] = { review: { explode: false } };
-          } else if (fieldSchema['ui:field'] === 'MultiEntityObjectPicker') {
+          } else if (
+            fieldSchema['ui:field'] === 'MultiEntityObjectPicker' &&
+            value
+          ) {
             const values: Entity[] = value;
 
             newFormData[key] = values.map(val =>
