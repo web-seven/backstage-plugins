@@ -1,6 +1,6 @@
 import { policyExtensionPoint } from '@backstage/plugin-permission-node/alpha';
 
-import { OpenFgaService } from '@web-seven/backstage-plugin-openfga-backend';
+import { OpenFgaService } from '@web-seven/backstage-backend-plugin-openfga';
 import {
   coreServices,
   createBackendModule,

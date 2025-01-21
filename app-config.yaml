@@ -110,7 +110,8 @@ openfga:
   baseUrl: /:base-url/model/:scope/:name
   token: ${OPENFGA_AUTH_TOKEN}
   host: ${OPENFGA_HOST}
-  storeId: ${OPENFGA_STORE_ID}
+  # storeId: ${OPENFGA_STORE_ID}
+  storeName: backstage
   plugins:
     - catalog
     - scaffolder

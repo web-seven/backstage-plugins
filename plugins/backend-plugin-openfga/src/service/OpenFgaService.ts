@@ -211,4 +211,5 @@ export class OpenFgaService {
   public async checkPermission(user: string, relation: string, object: string) {
     return this.openFgaClient.check({ user, relation, object });
   }
+
 }

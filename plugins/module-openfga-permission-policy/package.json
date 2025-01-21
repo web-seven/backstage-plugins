@@ -1,5 +1,5 @@
 {
-  "name": "@web-seven/backstage-module-openfga",
+  "name": "@web-seven/backstage-module-openfga-permission-policy",
   "description": "The permission-policy backend module for the permission plugin.",
   "version": "0.1.0",
   "main": "src/index.ts",
@@ -13,8 +13,8 @@
   },
   "backstage": {
     "role": "backend-plugin-module",
-    "pluginId": "backend-plugin-module-openfga",
-    "pluginPackage": "@web-seven/backend-plugin-module-openfga"
+    "pluginId": "backstage-module-openfga-permission-policy",
+    "pluginPackage": "@web-seven/backstage-module-openfga-permission-policy"
   },
   "scripts": {
     "start": "backstage-cli package start",
@@ -30,7 +30,7 @@
     "@backstage/backend-plugin-api": "^0.7.0",
     "@backstage/plugin-permission-common": "^0.8.1",
     "@backstage/plugin-permission-node": "^0.8.4",
-    "@web-seven/backstage-plugin-openfga-backend": "^0.1.0"
+    "@web-seven/backstage-backend-plugin-openfga": "^0.1.0"
   },
   "devDependencies": {
     "@backstage/backend-test-utils": "^0.4.4",

@@ -8,7 +8,7 @@ import {
   PolicyQueryUser,
 } from '@backstage/plugin-permission-node';
 
-import { OpenFgaService } from '@web-seven/backstage-plugin-openfga-backend';
+import { OpenFgaService } from '@web-seven/backstage-backend-plugin-openfga';
 import { LoggerService } from '@backstage/backend-plugin-api';
 
 export class OpenFGAPermissionPolicy implements PermissionPolicy {

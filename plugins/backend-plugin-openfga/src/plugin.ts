@@ -3,7 +3,7 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 import { createRouter } from './service/router';
-import { OpenFgaService } from './service/OpenFgaClient';
+import { OpenFgaService } from './service/OpenFgaService';
 
 /**
  * openfgaPlugin backend plugin

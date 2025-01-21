@@ -1,5 +1,5 @@
 {
-  "name": "@web-seven/backstage-plugin-openfga-backend",
+  "name": "@web-seven/backstage-backend-plugin-openfga",
   "version": "0.1.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
