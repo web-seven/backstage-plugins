@@ -2,8 +2,8 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
-import { createRouter } from './service/router';
-import { OpenFgaService } from './service/OpenFgaService';
+import { createRouter } from './router';
+import { openFGAServiceRef } from './service/OpenFGAService';
 
 /**
  * openfgaPlugin backend plugin
@@ -19,12 +19,11 @@ export const openfgaPlugin = createBackendPlugin({
         logger: coreServices.logger,
         config: coreServices.rootConfig,
         auth: coreServices.auth,
+        service: openFGAServiceRef,
       },
-      async init({ httpRouter, logger, config, auth }) {
-        const router = await createRouter({ logger, config, auth });
+      async init({ httpRouter, logger, config,  service }) {
+        const router = await createRouter({ logger, config, service });
         httpRouter.use(router);
-        const openFgaService = new OpenFgaService(config, logger, auth);
-        await openFgaService.createAuthorizationModel();
       },
     });
   },

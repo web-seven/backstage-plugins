@@ -1,7 +1,7 @@
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 import { JsonObject } from '@backstage/types';
-import { AuthService } from '@backstage/backend-plugin-api';
+import { OpenFgaService } from './service/OpenFGAService';
 
 export type Relations = {
   [resourceKey in string]: {
@@ -76,5 +76,5 @@ export type TupleKeys = {
 export interface RouterOptions {
   logger: LoggerService;
   config: Config;
-  auth: AuthService;
+  service: OpenFgaService;
 }

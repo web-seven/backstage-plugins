@@ -1,11 +1,11 @@
 import { policyExtensionPoint } from '@backstage/plugin-permission-node/alpha';
 
-import { OpenFgaService } from '@web-seven/backstage-backend-plugin-openfga';
 import {
   coreServices,
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { OpenFGAPermissionPolicy } from './policies/OpenFGAPermissionPolicy';
+import { openFGAServiceRef } from '@web-seven/backstage-backend-plugin-openfga/src/service/OpenFGAService';
 
 export const openfgaModule = createBackendModule({
   pluginId: 'permission',
@@ -15,15 +15,11 @@ export const openfgaModule = createBackendModule({
       deps: {
         policy: policyExtensionPoint,
         logger: coreServices.logger,
-        config: coreServices.rootConfig,
-        auth: coreServices.auth,
+        service: openFGAServiceRef,
       },
-      async init({ policy, logger, config, auth }) {
+      async init({ policy, logger, service }) {
         policy.setPolicy(
-          new OpenFGAPermissionPolicy(
-            new OpenFgaService(config, logger, auth),
-            logger,
-          ),
+          new OpenFGAPermissionPolicy( service, logger )
         );
       },
     });
