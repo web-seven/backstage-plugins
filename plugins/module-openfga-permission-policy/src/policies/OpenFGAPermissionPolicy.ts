@@ -7,41 +7,53 @@ import {
   PolicyQuery,
   PolicyQueryUser,
 } from '@backstage/plugin-permission-node';
+import { parseEntityRef } from '@backstage/catalog-model';
+import { Config } from '@backstage/config';
 
 import { OpenFgaService } from '@web-seven/backstage-backend-plugin-openfga';
 import { LoggerService } from '@backstage/backend-plugin-api';
 
 export class OpenFGAPermissionPolicy implements PermissionPolicy {
-  private logger: LoggerService;
-  private openFgaService: OpenFgaService;
-  constructor(openFgaService: OpenFgaService, logger: LoggerService) {
-    this.openFgaService = openFgaService;
-    this.logger = logger;
-  }
+  constructor(
+    private openFgaService: OpenFgaService,
+    private logger: LoggerService,
+    private config: Config,
+  ) {}
 
   async handle(
     request: PolicyQuery,
     userDetails: PolicyQueryUser,
   ): Promise<PolicyDecision> {
-    const user = `group:${userDetails.info.userEntityRef.split('/').pop()}`;
-    const [resourceName, action] = [
-      `${request.permission.name.split('.').slice(0, -1).join('.')}:all`,
-      request.permission.name.split('.').pop(),
-    ];
-    let result;
-    try {
-      result = await this.openFgaService.checkPermission(
-        user,
-        action!,
-        resourceName,
-      );
-      return {
-        result: result.allowed ? AuthorizeResult.ALLOW : AuthorizeResult.DENY,
-      };
-    } catch (error) {
-      this.logger.error(`Error checking permission: ${error}`);
-
-      return { result: AuthorizeResult.DENY };
+    let result = AuthorizeResult.DENY;
+    for (const ownershipRef of userDetails.info.ownershipEntityRefs) {
+      const ownership = parseEntityRef(ownershipRef);
+      if (ownership.kind === 'group') {
+        const groupName = ownership.name;
+        if (this.config.getOptionalString('openfga.adminGroup') === groupName) {
+          result = AuthorizeResult.ALLOW;
+          continue;
+        }
+        const user = `group:${groupName}`;
+        const [resourceName, action] = [
+          `${request.permission.name.split('.').slice(0, -1).join('.')}:all`,
+          request.permission.name.split('.').pop(),
+        ];
+        let response;
+        try {
+          response = await this.openFgaService.checkPermission(
+            user,
+            action!,
+            resourceName,
+          );
+          result =
+            result === AuthorizeResult.DENY && response.allowed
+              ? AuthorizeResult.ALLOW
+              : AuthorizeResult.DENY;
+        } catch (error) {
+          this.logger.error(`Error checking permission: ${error}`);
+        }
+      }
     }
+    return { result };
   }
 }

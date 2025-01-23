@@ -1,19 +1,10 @@
 import express from 'express';
-import {
-  Relations,
-  TupleGridData,
-  TupleKey,
-  TupleKeys,
-} from '../types';
+import { Relations, TupleGridData, TupleKey, TupleKeys } from '../types';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { OpenFgaService } from '../service/OpenFGAService';
 
 export class OpenFGARoute {
-
-  constructor(
-    private service: OpenFgaService, 
-    private logger: LoggerService ) 
-  {}
+  constructor(private service: OpenFgaService, private logger: LoggerService) {}
 
   /**
    * Route for get tuples data
@@ -26,6 +17,7 @@ export class OpenFGARoute {
 
     try {
       const storeId = await this.service.getStoreId();
+
       if (!storeId) {
         const message =
           'No store found with the specified ID in the configuration';
@@ -33,13 +25,14 @@ export class OpenFGARoute {
         return response.status(404).json({ message });
       }
 
-      const authorizationModel = await this.service.getAuthorizationModel(storeId);
+      const authorizationModel = await this.service.getAuthorizationModel(
+        storeId,
+      );
       if (!authorizationModel) {
         const message = 'No authorization model was found';
         this.logger.error(message);
         return response.status(404).json({ message });
       }
-
       const typeDefinitions = authorizationModel.type_definitions;
       const hasScopeType = typeDefinitions.some(
         typeDefinition => typeDefinition.type === scope,
@@ -61,7 +54,11 @@ export class OpenFGARoute {
                 relatedUser => relatedUser.type === scope,
               )
             ) {
-              const listObjects = await this.service.getObjects(typeDefinition.type, role, `${scope}:${name}`)
+              const listObjects = await this.service.getObjects(
+                typeDefinition.type,
+                role,
+                `${scope}:${name}`,
+              );
               validRelations[typeDefinition.type] =
                 validRelations[typeDefinition.type] || {};
               validRelations[typeDefinition.type][role] =
@@ -111,14 +108,15 @@ export class OpenFGARoute {
           .json({ message: 'No store was found or has the specified ID' });
       }
 
-      const authorizationModel = await this.service.getAuthorizationModel(storeId);
+      const authorizationModel = await this.service.getAuthorizationModel(
+        storeId,
+      );
       if (!authorizationModel) {
         return response
           .status(404)
           .json({ message: 'No authorization model ID was found' });
       }
 
-      
       const relations: Relations = request.body;
       const tupleKeys: TupleKeys = { writes: [], deletes: [] };
 
@@ -138,11 +136,11 @@ export class OpenFGARoute {
       });
 
       if (tupleKeys.writes.length) {
-        await this.service.writeTuples(tupleKeys.writes)
+        await this.service.writeTuples(tupleKeys.writes);
       }
 
       if (tupleKeys.deletes.length) {
-        await this.service.deleteTuples(tupleKeys.deletes)
+        await this.service.deleteTuples(tupleKeys.deletes);
       }
 
       return response
@@ -155,5 +153,4 @@ export class OpenFGARoute {
         .json({ message: 'Failed to update relations', error });
     }
   }
-
 }

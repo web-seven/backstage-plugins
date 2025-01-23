@@ -11,7 +11,7 @@ import { openFGAServiceRef } from './service/OpenFGAService';
  * @public
  */
 export const openfgaPlugin = createBackendPlugin({
-  pluginId: 'openfga-backend',
+  pluginId: 'openfga',
   register(env) {
     env.registerInit({
       deps: {
@@ -21,7 +21,7 @@ export const openfgaPlugin = createBackendPlugin({
         auth: coreServices.auth,
         service: openFGAServiceRef,
       },
-      async init({ httpRouter, logger, config,  service }) {
+      async init({ httpRouter, logger, config, service }) {
         const router = await createRouter({ logger, config, service });
         httpRouter.use(router);
       },

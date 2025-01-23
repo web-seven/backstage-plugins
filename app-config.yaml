@@ -112,6 +112,7 @@ openfga:
   host: ${OPENFGA_HOST}
   # storeId: ${OPENFGA_STORE_ID}
   storeName: backstage
+  adminGroup: admin
   plugins:
     - catalog
     - scaffolder

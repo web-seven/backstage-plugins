@@ -10582,18 +10582,7 @@
   resolved "https://registry.yarnpkg.com/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
-"@web-seven/backstage-module-openfga@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@web-seven/backstage-module-openfga/-/backstage-module-openfga-0.1.0.tgz#790e2b6467e60c5a12ba2233c2b57d86b6b8684e"
-  integrity sha512-GaeUo/9Zc+sr0jw58RapPAL/MRPIcskDbH3wbBryff7WG7xN9nWNZ2cgojzcaYI+c7/MJtY1QIgmI8+zqLVLxA==
-  dependencies:
-    "@backstage/backend-common" "^0.23.3"
-    "@backstage/backend-plugin-api" "^0.7.0"
-    "@backstage/plugin-permission-common" "^0.8.1"
-    "@backstage/plugin-permission-node" "^0.8.4"
-    "@web-seven/backstage-plugin-openfga-backend" "^0.1.0"
-
-"@web-seven/backstage-plugin-openfga-backend@^0.1.0", "@web-seven/backstage-plugin-openfga-backend@~0.1.0":
+"@web-seven/backstage-plugin-openfga-backend@~0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@web-seven/backstage-plugin-openfga-backend/-/backstage-plugin-openfga-backend-0.1.0.tgz#0db4e14f5b22e70a09a82ddc3cb73c5d79f1b590"
   integrity sha512-hW2WM5MVgCwQ5jUir3HoQVOhHsS/DHEieik2W7o3wC4BNpsDJm8yY1F9PIE4s1SlSd2bo4XdbwkAdBQbwNKHDQ==

@@ -36,11 +36,6 @@ backend.add(import('@backstage/plugin-search-backend-module-pg/alpha'));
 backend.add(import('@backstage/plugin-search-backend-module-catalog/alpha'));
 backend.add(import('@backstage/plugin-search-backend-module-techdocs/alpha'));
 
-backend.add(
-  import(
-    '@web-seven/backstage-plugin-scaffolder-backend-module-sealed-secrets'
-  ),
-);
 backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
 backend.add(
   import(
@@ -48,8 +43,7 @@ backend.add(
   ),
 );
 
-backend.add(import('@web-seven/backstage-plugin-openfga-backend'));
-backend.add(import('@web-seven/backstage-plugin-crossplane-scaffolder'));
-backend.add(import('@web-seven/backstage-module-openfga'));
+backend.add(import('@web-seven/backstage-backend-plugin-openfga'));
+backend.add(import('@web-seven/backstage-module-openfga-permission-policy'));
 
 backend.start();
