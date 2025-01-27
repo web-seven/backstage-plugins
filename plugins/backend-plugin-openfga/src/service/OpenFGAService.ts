@@ -1,38 +1,29 @@
-import { CredentialsMethod, OpenFgaClient, TypeDefinition } from '@openfga/sdk';
+import {
+  CredentialsMethod,
+  OpenFgaClient,
+  AuthorizationModel,
+  TypeDefinition,
+} from '@openfga/sdk';
 import { Config } from '@backstage/config';
-import { LoggerService } from '@backstage/backend-plugin-api';
+import {
+  coreServices,
+  createServiceFactory,
+  createServiceRef,
+  LoggerService,
+} from '@backstage/backend-plugin-api';
 import { AuthService } from '@backstage/backend-plugin-api';
 import { PermissionCollector } from '../permissions/PermissionCollector';
+import { TupleKey } from '../types';
 
 export class OpenFgaService {
-  private openFgaClient: OpenFgaClient;
-  private config: Config;
-  private logger: LoggerService;
-  private auth: AuthService;
   readonly user_type = 'group';
-  /**
-   * Constructor initializes the OpenFgaClient with API URL, store ID, and authorization token from config.
-   * @param config - Backstage configuration object to retrieve OpenFGA connection details.
-   */
-  constructor(config: Config, logger: LoggerService, auth: AuthService) {
-    this.config = config;
-    this.logger = logger;
-    this.auth = auth;
-    const apiUrl = config.getString('openfga.host');
-    const storeId = config.getString('openfga.storeId');
-    const authorizationToken = config.getString('openfga.token');
-    this.openFgaClient = new OpenFgaClient({
-      apiUrl,
-      storeId,
-      credentials: {
-        method: CredentialsMethod.ApiToken,
-        config: {
-          token: authorizationToken,
-        },
-      },
-    });
-  }
 
+  constructor(
+    private client: OpenFgaClient,
+    private config: Config,
+    private logger: LoggerService,
+    private auth: AuthService,
+  ) {}
   /**
    * Creates or updates the authorization model by comparing the new model with the existing one.
    * @returns The updated authorization model from OpenFGA.
@@ -71,7 +62,7 @@ export class OpenFgaService {
       }
 
       if (oldModel.authorization_model) {
-        return await this.openFgaClient.writeAuthorizationModel(
+        return await this.client.writeAuthorizationModel(
           oldModel.authorization_model,
         );
       }
@@ -129,7 +120,7 @@ export class OpenFgaService {
    */
   private async readModel() {
     const options = { retryParams: { maxRetry: 3 } };
-    return await this.openFgaClient.readLatestAuthorizationModel(options);
+    return await this.client.readLatestAuthorizationModel(options);
   }
 
   /**
@@ -159,7 +150,7 @@ export class OpenFgaService {
       metadata: undefined,
     });
 
-    return await this.openFgaClient.writeAuthorizationModel(newModel);
+    return await this.client.writeAuthorizationModel(newModel);
   }
 
   /**
@@ -209,6 +200,131 @@ export class OpenFgaService {
   }
 
   public async checkPermission(user: string, relation: string, object: string) {
-    return this.openFgaClient.check({ user, relation, object });
+    return this.client.check({ user, relation, object });
+  }
+
+  async getStoreId(): Promise<string | undefined> {
+    return (await this.client.getStore()).id;
+  }
+
+  /**
+   * Get the current authorization model
+   * @param storeId string
+   * @returns Promise<AuthorizationModel | undefined>
+   */
+  async getAuthorizationModel(
+    storeId: string,
+  ): Promise<AuthorizationModel | undefined> {
+    return (
+      await this.client.readAuthorizationModels({
+        storeId,
+      })
+    ).authorization_models.shift();
+  }
+
+  /**
+   * WriteTuples - Utility method to write tuples, wraps Write
+   * @param tupleKeys TupleKey[]
+   * @returns ClientWriteSingleResponse[]
+   */
+  async writeTuples(tupleKeys: TupleKey[]) {
+    return (await this.client.writeTuples(tupleKeys)).writes;
+  }
+
+  /**
+   * DeleteTuples - Utility method to delete tuples, wraps Write
+   * @param tupleKeys TupleKey[]
+   * @returns ClientWriteSingleResponse[]
+   */
+  async deleteTuples(tupleKeys: TupleKey[]) {
+    return (await this.client.deleteTuples(tupleKeys)).deletes;
+  }
+
+  /**
+   * Get the objects of a particular type that the user has a certain relation to (evaluates)
+   * @param type string
+   * @param relation string
+   * @param user string
+   * @returns Promise<Array<string>>
+   */
+  async getObjects(
+    type: string,
+    relation: string,
+    user: string,
+  ): Promise<Array<string>> {
+    return (
+      await this.client.listObjects({
+        type,
+        relation,
+        user,
+      })
+    ).objects;
   }
 }
+
+/**
+ * OpenFGA service container
+ */
+export const openFGAServiceRef = createServiceRef<OpenFgaService>({
+  id: 'openfga',
+  defaultFactory: async service =>
+    createServiceFactory({
+      service,
+      deps: {
+        logger: coreServices.logger,
+        config: coreServices.rootConfig,
+        auth: coreServices.auth,
+      },
+      async factory({ logger, config, auth }) {
+        const apiUrl = config.getString('openfga.host');
+        const storeId = config.getOptionalString('openfga.storeId');
+        const storeName = config.getOptionalString('openfga.storeName');
+        const authorizationToken = config.getString('openfga.token');
+
+        const client = new OpenFgaClient({
+          apiUrl,
+          credentials: {
+            method: CredentialsMethod.ApiToken,
+            config: {
+              token: authorizationToken,
+            },
+          },
+        });
+        if (!storeId && storeName) {
+          const stores = (
+            await client.listStores({
+              pageSize: 100,
+            })
+          ).stores;
+
+          let store = stores.find(lstore => {
+            if (lstore.name === storeName) {
+              return lstore;
+            }
+            return false;
+          });
+          if (!store) {
+            store = await client.createStore({
+              name: storeName,
+            });
+          }
+          client.storeId = store.id;
+        } else if (storeId) {
+          client.storeId = storeId;
+        } else {
+          throw new Error(
+            'One of openfga.storeId or openfga.storeName not found in app config.',
+          );
+        }
+
+        const serviceInstance = new OpenFgaService(
+          client,
+          config,
+          logger,
+          auth,
+        );
+        serviceInstance.createAuthorizationModel();
+        return serviceInstance;
+      },
+    }),
+});

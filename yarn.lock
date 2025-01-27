@@ -10582,6 +10582,24 @@
   resolved "https://registry.yarnpkg.com/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
+"@web-seven/backstage-plugin-openfga-backend@~0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@web-seven/backstage-plugin-openfga-backend/-/backstage-plugin-openfga-backend-0.1.0.tgz#0db4e14f5b22e70a09a82ddc3cb73c5d79f1b590"
+  integrity sha512-hW2WM5MVgCwQ5jUir3HoQVOhHsS/DHEieik2W7o3wC4BNpsDJm8yY1F9PIE4s1SlSd2bo4XdbwkAdBQbwNKHDQ==
+  dependencies:
+    "@backstage/backend-common" "^0.23.3"
+    "@backstage/backend-defaults" "^0.4.0"
+    "@backstage/backend-plugin-api" "^0.7.0"
+    "@backstage/config" "^1.2.0"
+    "@backstage/plugin-auth-backend-module-guest-provider" "^0.2.0"
+    "@backstage/types" "^1.1.1"
+    "@openfga/sdk" "^0.7.0"
+    "@types/esprima" "^4.0.6"
+    axios "^1.7.7"
+    express "^4.17.1"
+    express-promise-router "^4.1.0"
+    node-fetch "^2.6.7"
+
 "@webassemblyjs/ast@1.12.1", "@webassemblyjs/ast@^1.12.1":
   version "1.12.1"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.12.1.tgz#bb16a0e8b1914f979f45864c23819cc3e3f0d4bb"

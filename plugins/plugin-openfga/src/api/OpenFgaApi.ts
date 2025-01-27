@@ -7,7 +7,7 @@ import {
 } from '@web-seven/backstage-plugin-openfga-backend';
 import { OpenFgaApi } from '../types';
 
-export default class OpenFgaApiClient implements OpenFgaApi {
+export default class openFgaApi implements OpenFgaApi {
   private readonly discoveryApi: DiscoveryApi;
   private readonly fetchApi: FetchApi;
   private readonly configApi: ConfigApi;

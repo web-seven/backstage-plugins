@@ -16,7 +16,7 @@ import {
   useRouteRefParams,
 } from '@backstage/core-plugin-api';
 import { Relations } from '@web-seven/backstage-plugin-openfga-backend';
-import { openfgaApiRef } from '../../api';
+import { openFgaApiRef } from '../../api';
 
 const useStyles = makeStyles(theme => ({
   backButton: {
@@ -32,7 +32,7 @@ const useStyles = makeStyles(theme => ({
 export const TupleGrid = (): JSX.Element => {
   const styles = useStyles();
   const { kind: scope, name } = useRouteRefParams(entityRouteRef);
-  const openfgaApi = useApi(openfgaApiRef);
+  const openfgaApi = useApi(openFgaApiRef);
   const alertApi = useApi(alertApiRef);
   const [initialRelations, setInitialRelations] = useState<Relations>({});
   const [changedRelations, setChangedRelations] = useState<Relations>({});
