@@ -12,9 +12,9 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "pluginId": "backstage-plugin-openfga-backend",
+    "pluginId": "backstage-backend-plugin-openfga",
     "pluginPackages": [
-      "@web-seven/backstage-plugin-openfga-backend"
+      "@web-seven/backstage-backend-plugin-openfga"
     ]
   },
   "scripts": {
