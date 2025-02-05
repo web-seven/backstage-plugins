@@ -55,5 +55,10 @@
       "prettier --write"
     ]
   },
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@1.22.19",
+  "dependencies": {
+    "@xyflow/react": "^12.4.2",
+    "d3": "^7.9.0",
+    "reactflow": "^11.11.4"
+  }
 }

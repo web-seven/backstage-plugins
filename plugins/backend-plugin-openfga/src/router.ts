@@ -15,7 +15,7 @@ export async function createRouter(
 
   const baseUrl = config.getString('openfga.baseUrl').replace('/:base-url', '');
 
-  router.get(baseUrl, route.getTupleGridData.bind(route));
+  router.get(baseUrl, route.getTupleTreeData.bind(route));
   router.post(baseUrl, route.setRelations.bind(route));
 
   const middleware = MiddlewareFactory.create({ logger, config });

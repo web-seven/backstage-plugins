@@ -207,6 +207,10 @@ export class OpenFgaService {
     return (await this.client.getStore()).id;
   }
 
+  async getStoreName(): Promise<string | undefined> {
+    return (await this.client.getStore()).name;
+  }
+
   /**
    * Get the current authorization model
    * @param storeId string

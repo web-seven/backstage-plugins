@@ -53,7 +53,7 @@ import {
 
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
-import { TupleGrid } from '@web-seven/backstage-plugin-openfga';
+import { TupleTree } from '@web-seven/backstage-plugin-openfga';
 
 const techdocsContent = (
   <EntityTechdocsContent>
@@ -310,7 +310,7 @@ const groupPage = (
       </Grid>
     </EntityLayout.Route>
     <EntityLayout.Route path="/relationship" title="Relationship">
-      <TupleGrid />
+      <TupleTree />
     </EntityLayout.Route>
   </EntityLayout>
 );
