@@ -70,7 +70,9 @@ export const EntityDisplayName = (
   const contentTitle =
     entityPresentation?.[labelVariant as keyof typeof entityPresentation];
 
-  let content = <>{contentTitle}</>;
+  const title = typeof contentTitle === 'string' ? contentTitle : '';
+
+  let content = <>{title}</>;
 
   content = (
     <Box component="span" className={classes.root}>

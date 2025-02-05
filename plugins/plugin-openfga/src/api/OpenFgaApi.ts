@@ -1,10 +1,10 @@
 import { ConfigApi, DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
 import { ResponseError } from '@backstage/errors';
 import {
-  TupleGridData,
+  TupleTreeData,
   Relations,
   SetScopeRelationsResponse,
-} from '@web-seven/backstage-plugin-openfga-backend';
+} from '@web-seven/backstage-backend-plugin-openfga';
 import { OpenFgaApi } from '../types';
 
 export default class openFgaApi implements OpenFgaApi {
@@ -22,11 +22,11 @@ export default class openFgaApi implements OpenFgaApi {
     this.configApi = options.configApi;
   }
 
-  async getScopeRelations(scope: string, name: string): Promise<TupleGridData> {
+  async getScopeRelations(scope: string, name: string): Promise<TupleTreeData> {
     const baseUrl = this.getBaseUrl(scope, name);
 
     if (baseUrl) {
-      const response: TupleGridData = await this.request<TupleGridData>(
+      const response: TupleTreeData = await this.request<TupleTreeData>(
         baseUrl,
         {
           headers: {
@@ -41,6 +41,7 @@ export default class openFgaApi implements OpenFgaApi {
       }
     }
     return {
+      storeName: '',
       resources: [],
       roles: [],
       relations: {},

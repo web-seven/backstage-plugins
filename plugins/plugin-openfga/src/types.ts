@@ -1,12 +1,12 @@
 import {
   Relations,
   SetScopeRelationsResponse,
-  TupleGridData,
-} from '@web-seven/backstage-plugin-openfga-backend';
+  TupleTreeData,
+} from '@web-seven/backstage-backend-plugin-openfga';
 
 /** @public */
 export interface OpenFgaApi {
-  getScopeRelations: (scope: string, name: string) => Promise<TupleGridData>;
+  getScopeRelations: (scope: string, name: string) => Promise<TupleTreeData>;
   setScopeRelations: (
     scope: string,
     name: string,

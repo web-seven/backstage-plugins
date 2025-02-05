@@ -5,11 +5,12 @@ import { OpenFgaService } from './service/OpenFGAService';
 
 export type Relations = {
   [resourceKey in string]: {
-    [relationKey in string]: boolean;
+    [roleKey in string]: boolean;
   };
 };
 
-export type TupleGridData = {
+export type TupleTreeData = {
+  storeName: string;
   resources: string[];
   roles: string[];
   relations: Relations;

@@ -1,5 +1,5 @@
 import express from 'express';
-import { Relations, TupleGridData, TupleKey, TupleKeys } from '../types';
+import { Relations, TupleTreeData, TupleKey, TupleKeys } from '../types';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { OpenFgaService } from '../service/OpenFGAService';
 
@@ -12,7 +12,7 @@ export class OpenFGARoute {
    * @param response express.Response
    * @returns void
    */
-  async getTupleGridData(request: express.Request, response: express.Response) {
+  async getTupleTreeData(request: express.Request, response: express.Response) {
     const { scope, name } = request.params;
 
     try {
@@ -70,7 +70,10 @@ export class OpenFGARoute {
 
       await Promise.all(relationPromises);
 
-      const data: TupleGridData = {
+      const storeName = (await this.service.getStoreName()) || 'backstage';
+
+      const data: TupleTreeData = {
+        storeName,
         relations: validRelations,
         resources: Object.keys(validRelations),
         roles: [
