@@ -5,7 +5,7 @@ import {
 import {
   catalogServiceRef,
   catalogProcessingExtensionPoint,
-} from '@backstage/plugin-catalog-node/alpha';
+} from '@backstage/plugin-catalog-node';
 import { XRDTemplateEntityProvider } from './provider/EntityProvider';
 
 export const catalogModuleCrossplane = createBackendModule({

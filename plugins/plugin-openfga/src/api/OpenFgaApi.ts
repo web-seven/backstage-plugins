@@ -1,11 +1,11 @@
 import { ConfigApi, DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
 import { ResponseError } from '@backstage/errors';
 import {
+  OpenFgaApi,
   TupleTreeData,
   Relations,
   SetScopeRelationsResponse,
-} from '@web-seven/backstage-backend-plugin-openfga';
-import { OpenFgaApi } from '../types';
+} from '../types';
 
 export default class openFgaApi implements OpenFgaApi {
   private readonly discoveryApi: DiscoveryApi;

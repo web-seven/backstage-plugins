@@ -1,8 +1,22 @@
-import {
-  Relations,
-  SetScopeRelationsResponse,
-  TupleTreeData,
-} from '@web-seven/backstage-backend-plugin-openfga';
+/** @public */
+export type Relations = {
+  [resourceKey in string]: {
+    [roleKey in string]: boolean;
+  };
+};
+
+/** @public */
+export type TupleTreeData = {
+  storeName: string;
+  resources: string[];
+  roles: string[];
+  relations: Relations;
+};
+
+/** @public */
+export type SetScopeRelationsResponse = {
+  message: string;
+};
 
 /** @public */
 export interface OpenFgaApi {
