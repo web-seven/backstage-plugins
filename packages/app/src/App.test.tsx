@@ -1,4 +1,4 @@
-import React from 'react';
+import { createElement } from 'react';
 import { render, waitFor } from '@testing-library/react';
 import App from './App';
 
@@ -20,7 +20,7 @@ describe('App', () => {
       ] as any,
     };
 
-    const rendered = render(<App />);
+    const rendered = render(createElement(App));
 
     await waitFor(() => {
       expect(rendered.baseElement).toBeInTheDocument();
