@@ -24,7 +24,7 @@ export class OpenFGAPermissionPolicy implements PermissionPolicy {
     request: PolicyQuery,
     userDetails: PolicyQueryUser,
   ): Promise<PolicyDecision> {
-    let result = AuthorizeResult.DENY;
+    let result: AuthorizeResult.ALLOW | AuthorizeResult.DENY = AuthorizeResult.DENY;
     for (const ownershipRef of userDetails.info.ownershipEntityRefs) {
       const ownership = parseEntityRef(ownershipRef);
       if (ownership.kind === 'group') {

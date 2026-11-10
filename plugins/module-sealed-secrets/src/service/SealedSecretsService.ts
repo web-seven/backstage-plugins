@@ -36,7 +36,7 @@ export class SealedSecretsServiceImpl implements SealedSecretsService {
   }
 }
 
-export const sealedSecretsServiceRef: ServiceRef<SealedSecretsService> =
+export const sealedSecretsServiceRef: ServiceRef<SealedSecretsService, 'plugin', 'singleton'> =
   createServiceRef<SealedSecretsService>({
     id: 'sealedSecrets.service',
     defaultFactory: async service =>

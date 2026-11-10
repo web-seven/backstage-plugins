@@ -15,7 +15,7 @@ import {
   useApi,
   useRouteRefParams,
 } from '@backstage/core-plugin-api';
-import { Relations } from '@web-seven/backstage-backend-plugin-openfga';
+import { Relations } from '../../types';
 import { openFgaApiRef } from '../../api';
 
 const useStyles = makeStyles(theme => ({
