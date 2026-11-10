@@ -24,7 +24,7 @@
     "prettier:check": "prettier --check .",
     "new": "backstage-cli new --scope web-seven",
     "changeset": "changeset",
-    "release": "yarn tsc && backstage-cli repo build && changeset publish"
+    "release": "yarn tsc && lerna run build --no-private && changeset publish"
   },
   "workspaces": {
     "packages": [
